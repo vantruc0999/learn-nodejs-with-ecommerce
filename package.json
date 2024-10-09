@@ -1,0 +1,20 @@
+{
+  "name": "ecommerce-nodejs-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "compression": "^1.7.4",
+    "express": "^4.21.1"
+  },
+  "devDependencies": {
+    "helmet": "^8.0.0",
+    "morgan": "^1.10.0"
+  }
+}
