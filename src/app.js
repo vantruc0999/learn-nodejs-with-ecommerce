@@ -12,13 +12,15 @@ app.use(helmet());
 //compresses HTTP responses to reduce data size and improve page load speed.
 app.use(compression());
 //init db
-
+require("./databases/init.mongodb");
+// const { countConnect, checkOverload } = require("./helpers/check.connect");
+// checkOverload()
 //init routes
 app.get("/", (req, res, next) => {
   const strCompress = "Hello";
   return res.status(200).json({
     message: "Hehe",
-    metadata: strCompress.repeat(1000)
+    metadata: strCompress.repeat(1000),
   });
 });
 
