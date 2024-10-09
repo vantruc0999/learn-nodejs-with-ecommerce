@@ -1,10 +1,12 @@
 "use strict";
 
 const mongoose = require("mongoose");
+const {
+  db: { host, port, user, password },
+} = require("../configs/config.mongodb");
 const { countConnect } = require("../helpers/check.connect");
-// const connectString = "mongodb://localhost:28017/shopDEV";
 
-const connectString = "mongodb://root:123456@localhost:27019/";
+const connectString = `mongodb://${user}:${password}@${host}:${port}`;
 
 class Database {
   constructor() {
