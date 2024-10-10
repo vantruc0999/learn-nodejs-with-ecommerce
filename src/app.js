@@ -1,4 +1,4 @@
-require('dotenv').config()
+require("dotenv").config();
 const express = require("express");
 const { default: helmet } = require("helmet");
 const morgan = require("morgan");
@@ -12,18 +12,18 @@ app.use(morgan("dev"));
 app.use(helmet());
 //compresses HTTP responses to reduce data size and improve page load speed.
 app.use(compression());
+
+app.use(express.json());
+app.use(
+  express.urlencoded({
+    extended: true,
+  })
+);
 //init db
 require("./databases/init.mongodb");
 // const { countConnect, checkOverload } = require("./helpers/check.connect");
 // checkOverload()
 //init routes
-app.get("/", (req, res, next) => {
-  const strCompress = "Hello";
-  return res.status(200).json({
-    message: "Hehe",
-    metadata: strCompress.repeat(1000),
-  });
-});
-
+app.use("/", require("./routes"));
 //handling error
 module.exports = app;
