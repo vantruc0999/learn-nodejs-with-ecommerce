@@ -69,14 +69,11 @@ class AuthService {
       );
 
       return {
-        code: 201,
-        metada: {
-          shop: getInfoData({
-            fields: ["_id", "name", "email"],
-            object: newShop,
-          }),
-          tokens,
-        },
+        shop: getInfoData({
+          fields: ["_id", "name", "email"],
+          object: newShop,
+        }),
+        tokens,
       };
     }
 
