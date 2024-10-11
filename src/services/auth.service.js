@@ -17,7 +17,6 @@ const RoleShop = {
 
 class AuthService {
   static signUp = async ({ name, email, password }) => {
-    console.log("here");
     try {
       const holderShop = await shopModel.findOne({ email }).lean();
 
@@ -27,7 +26,6 @@ class AuthService {
           message: "Shop already registered",
         };
       }
-      console.log(password);
       const passwordHash = await bcrypt.hash(password, 10);
 
       const newShop = await shopModel.create({
@@ -74,8 +72,6 @@ class AuthService {
           publicKey,
           privateKey
         );
-
-        console.log(tokens);
 
         return {
           code: 201,
