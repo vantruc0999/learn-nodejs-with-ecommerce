@@ -10,7 +10,9 @@ const { getInfoData } = require("../utils");
 const {
   BadRequestError,
   ConflictRequestError,
+  Unauthorized,
 } = require("../core/error.response");
+const { findByEmail } = require("./shop.service");
 
 const RoleShop = {
   SHOP: "SHOP",
@@ -20,6 +22,40 @@ const RoleShop = {
 };
 
 class AuthService {
+  static login = async ({ email, password, refreshToken = null }) => {
+    const shop = await findByEmail({ email });
+
+    if (!shop) throw new BadRequestError("Shop not registered");
+
+    const match = bcrypt.compare(password, shop.password);
+
+    if (!match) throw new Unauthorized("Unathorized");
+    const privateKey = crypto.randomBytes(64).toString("hex");
+    const publicKey = crypto.randomBytes(64).toString("hex");
+
+    const { _id: userId } = shop;
+    const tokens = await createTokenPair(
+      { userId: shop._id, email },
+      publicKey,
+      privateKey
+    );
+
+    await KeyTokenService.createKeyToken({
+      refreshToken: tokens.refreshToken,
+      privateKey,
+      publicKey,
+      userId,
+    });
+
+    return {
+      shop: getInfoData({
+        fields: ["_id", "name", "email"],
+        object: shop,
+      }),
+      tokens,
+    };
+  };
+
   static signUp = async ({ name, email, password }) => {
     const holderShop = await shopModel.findOne({ email }).lean();
 

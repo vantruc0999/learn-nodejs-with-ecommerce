@@ -1,8 +1,15 @@
 "use strict";
 
-const { CREATED } = require("../core/success.response");
+const { CREATED, SuccessResponse } = require("../core/success.response");
 const AuthService = require("../services/auth.service");
 class AuthController {
+  async login(req, res, next) {
+    new SuccessResponse({
+      message: "Login OK!",
+      metadata: await AuthService.login(req.body),
+    }).send(res);
+  }
+
   async signUp(req, res, next) {
     // return res.status(201).json(await AuthService.signUp(req.body));
     new CREATED({
