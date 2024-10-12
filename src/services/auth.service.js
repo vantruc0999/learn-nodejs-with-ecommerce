@@ -27,9 +27,10 @@ class AuthService {
 
     if (!shop) throw new BadRequestError("Shop not registered");
 
-    const match = bcrypt.compare(password, shop.password);
+    const match = await bcrypt.compare(password, shop.password);
 
     if (!match) throw new Unauthorized("Unathorized");
+
     const privateKey = crypto.randomBytes(64).toString("hex");
     const publicKey = crypto.randomBytes(64).toString("hex");
 
@@ -54,6 +55,12 @@ class AuthService {
       }),
       tokens,
     };
+  };
+
+  static logout = async ( keyStore ) => {
+    const delKey = await KeyTokenService.removeTokenById(keyStore._id);
+    console.log(delKey);
+    return delKey;
   };
 
   static signUp = async ({ name, email, password }) => {

@@ -3,6 +3,14 @@
 const { CREATED, SuccessResponse } = require("../core/success.response");
 const AuthService = require("../services/auth.service");
 class AuthController {
+  async logout(req, res, next) {
+    console.log(req.keyStore);
+    new SuccessResponse({
+      message: "Logout OK!",
+      metadata: await AuthService.logout(req.keyStore),
+    }).send(res);
+  }
+
   async login(req, res, next) {
     new SuccessResponse({
       message: "Login OK!",
