@@ -5,12 +5,13 @@ const shopModel = require("../models/shop.model");
 const bcrypt = require("bcrypt");
 const crypto = require("node:crypto");
 const KeyTokenService = require("./keyToken.service");
-const { createTokenPair } = require("../utils/jwt");
+const { createTokenPair, verifyJWT } = require("../utils/jwt");
 const { getInfoData } = require("../utils");
 const {
   BadRequestError,
   ConflictRequestError,
   Unauthorized,
+  Forbidden,
 } = require("../core/error.response");
 const { findByEmail } = require("./shop.service");
 
@@ -57,7 +58,7 @@ class AuthService {
     };
   };
 
-  static logout = async ( keyStore ) => {
+  static logout = async (keyStore) => {
     const delKey = await KeyTokenService.removeTokenById(keyStore._id);
     console.log(delKey);
     return delKey;
@@ -123,6 +124,55 @@ class AuthService {
     return {
       code: 200,
       metadata: null,
+    };
+  };
+
+  static handleRefreshToken = async (refreshToken) => {
+    const foundToken = await KeyTokenService.findByRefreshTokenUsed(
+      refreshToken
+    );
+
+    if (foundToken) {
+      const { userId, email } = await verifyJWT(
+        refreshToken,
+        foundToken.privateKey
+      );
+      console.log({ userId, email });
+      await KeyTokenService.deleteKeyById(userId);
+      throw new Forbidden("Something wrong!!! Please login again");
+    }
+
+    const holderToken = await KeyTokenService.findByRefreshToken(refreshToken);
+
+    if (!holderToken) throw new Unauthorized("Unauthorized");
+
+    const { userId, email } = await verifyJWT(
+      refreshToken,
+      holderToken.privateKey
+    );
+
+    const foundShop = await findByEmail({email});
+
+    if (!foundShop) throw new Unauthorized("Unauthorized");
+
+    const tokens = await createTokenPair(
+      { userId: foundShop._id, email },
+      holderToken.publicKey,
+      holderToken.privateKey
+    );
+
+    await holderToken.updateOne({
+      $set: {
+        refreshToken: tokens.refreshToken,
+      },
+      $addToSet: {
+        refreshTokensUsed: refreshToken,
+      },
+    });
+
+    return {
+      user: { userId, email },
+      tokens,
     };
   };
 }
