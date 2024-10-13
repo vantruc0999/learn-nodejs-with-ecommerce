@@ -3,7 +3,7 @@
 const express = require("express");
 const authController = require("../../controllers/auth.controller");
 const asyncHandler = require("../../helpers/asyncHandler");
-const { authentication } = require("../../middlewares/authentication");
+const { authentication, authenticationV2 } = require("../../middlewares/authentication");
 
 
 const router = express.Router();
@@ -11,7 +11,7 @@ const router = express.Router();
 router.post("/shop/signup", asyncHandler(authController.signUp));
 router.post("/shop/login", asyncHandler(authController.login));
 
-router.use(authentication)
+router.use(authenticationV2)
 router.post("/shop/logout", asyncHandler(authController.logout));
 router.post("/shop/handle-refresh-token", asyncHandler(authController.handleRefreshToken));
 

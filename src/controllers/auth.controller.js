@@ -26,9 +26,18 @@ class AuthController {
   }
 
   async handleRefreshToken(req, res, next) {
+    // new SuccessResponse({
+    //   message: "Get refresh token success",
+    //   metadata: await AuthService.handleRefreshToken(req.body.refreshToken),
+    // }).send(res);
+
     new SuccessResponse({
       message: "Get refresh token success",
-      metadata: await AuthService.handleRefreshToken(req.body.refreshToken),
+      metadata: await AuthService.handleRefreshTokenV2({
+        refreshToken: req.refreshToken,
+        user: req.user,
+        keyStore: req.keyStore,
+      }),
     }).send(res);
   }
 }

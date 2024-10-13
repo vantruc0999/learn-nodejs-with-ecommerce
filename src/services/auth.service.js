@@ -151,7 +151,7 @@ class AuthService {
       holderToken.privateKey
     );
 
-    const foundShop = await findByEmail({email});
+    const foundShop = await findByEmail({ email });
 
     if (!foundShop) throw new Unauthorized("Unauthorized");
 
@@ -172,6 +172,43 @@ class AuthService {
 
     return {
       user: { userId, email },
+      tokens,
+    };
+  };
+
+  static handleRefreshTokenV2 = async ({ keyStore, user, refreshToken }) => {
+    const { userId, email } = user;
+
+    if (keyStore.refreshTokensUsed.includes(refreshToken)) {
+      await KeyTokenService.deleteKeyById(userId);
+      throw new Forbidden("Something wrong!!! Please login again");
+    }
+
+    if (keyStore.refreshToken !== refreshToken) {
+      throw new Unauthorized("Unauthorized");
+    }
+
+    const foundShop = await findByEmail({ email });
+
+    if (!foundShop) throw new Unauthorized("Unauthorized");
+
+    const tokens = await createTokenPair(
+      { userId: foundShop._id, email },
+      keyStore.publicKey,
+      keyStore.privateKey
+    );
+
+    await keyStore.updateOne({
+      $set: {
+        refreshToken: tokens.refreshToken,
+      },
+      $addToSet: {
+        refreshTokensUsed: refreshToken,
+      },
+    });
+
+    return {
+      user,
       tokens,
     };
   };
