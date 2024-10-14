@@ -62,19 +62,19 @@ const authenticationV2 = asyncHandler(async (req, res, next) => {
     req.user = decodeUser;
     req.keyStore = keyStore;
     req.refreshToken = refreshToken;
-
     return next();
   }
-
+  
   const accessToken = req.headers[HEADER.AUTHORIZATION];
-
+  
   if (!accessToken) throw new Unauthorized("Unauthorized");
-
+  
   const decodeUser = JWT.verify(accessToken, keyStore.publicKey);
 
   if (userId !== decodeUser.userId) throw new Unauthorized("Unauthorized");
 
   req.keyStore = keyStore;
+  req.user = decodeUser;
 
   return next();
 });
