@@ -1,26 +1,65 @@
 "use strict";
 
-const { BadRequestError } = require("../core/error.response");
+const { BadRequestError, NotFound } = require("../core/error.response");
 const {
   product,
   clothing,
   electronic,
   furniture,
 } = require("../models/product.model");
+const {
+  findAllDraftsForShop,
+  publishProductByShop,
+  findAllPublishedForShop,
+  getProductByIdAndShop,
+  unPublishProductByShop,
+  updateProductPublishStatus,
+  searchProductByUser,
+} = require("../repositories/product.repository");
 
 class ProductFactory {
   static productRegistry = {};
 
   static registerProductType(type, classRef) {
-    ProductFactory.productRegistry[type] = classRef;
+    this.productRegistry[type] = classRef;
   }
 
   static async createProduct(type, payload) {
-    const productClass = ProductFactory.productRegistry[type];
+    const productClass = this.productRegistry[type];
 
-    if (!productClass) throw new BadRequestError(`Invalid Product Types ${type}`);
+    if (!productClass)
+      throw new BadRequestError(`Invalid Product Types ${type}`);
 
     return new productClass(payload).createProduct();
+  }
+
+  static async findAllDraftsForShop({ product_shop, limit = 50, skip = 0 }) {
+    const query = { product_shop, isDraft: true };
+    return await findAllDraftsForShop({ query, limit, skip });
+  }
+
+  static async findAllPublishedForShop({ product_shop, limit = 50, skip = 0 }) {
+    const query = { product_shop, isDraft: false };
+    return await findAllPublishedForShop({ query, limit, skip });
+  }
+
+  static async toggleProductPublishStatus({
+    product_shop,
+    product_id,
+    isPublish,
+  }) {
+    const foundShop = await getProductByIdAndShop({ product_shop, product_id });
+
+    if (!foundShop) {
+      throw new NotFound("Shop not found !!!");
+    }
+
+    return await updateProductPublishStatus(foundShop, isPublish);
+  }
+
+  static async getListSearchProduct({keySearch}) {
+    console.log('search res: ', await searchProductByUser(keySearch));
+    return await searchProductByUser(keySearch);
   }
 }
 
@@ -68,7 +107,10 @@ class Product {
 
 class Clothing extends Product {
   async createProduct() {
-    const newClothing = await clothing.create(this.product_attributes);
+    const newClothing = await clothing.create({
+      ...this.product_attributes,
+      product_shop: this.product_shop,
+    });
     if (!newClothing) throw new BadRequestError("Create new clothing error");
 
     const newProduct = await super.createProduct();
