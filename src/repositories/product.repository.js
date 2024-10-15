@@ -43,8 +43,12 @@ const findAllProducts = async ({ limit, sort, page, filter, select }) => {
   return products;
 };
 
-const findProduct = async ({ product_id, unSelect }) => {
+const findProductWithUnSelectedFields = async ({ product_id, unSelect }) => {
   return await product.findById(product_id).select(omitData(unSelect));
+};
+
+const findProductWithSelectedFields = async ({ productId, select }) => {
+  return await product.findById(productId).select(getSelectData(select));
 };
 
 const updateProductById = async ({
@@ -92,5 +96,6 @@ module.exports = {
   updateProductById,
   searchProductByUser,
   findAllProducts,
-  findProduct,
+  findProductWithUnSelectedFields,
+  findProductWithSelectedFields,
 };

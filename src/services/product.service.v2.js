@@ -9,15 +9,14 @@ const {
 } = require("../models/product.model");
 const {
   findAllDraftsForShop,
-  publishProductByShop,
   findAllPublishedForShop,
   getProductByIdAndShop,
-  unPublishProductByShop,
   updateProductPublishStatus,
   searchProductByUser,
   findAllProducts,
-  findProduct,
+  findProductWithUnSelectedFields,
   updateProductById,
+  findProductWithSelectedFields,
 } = require("../repositories/product.repository");
 const { removeUndefinedObject, updateNestedObjectParser } = require("../utils");
 
@@ -37,8 +36,13 @@ class ProductFactory {
     return new productClass(payload).createProduct();
   }
 
-  static async updateProduct(type, productId, payload) {
-    const productClass = this.productRegistry[type];
+  static async updateProduct(productId, payload) {
+    const productType = await findProductWithSelectedFields({
+      productId,
+      select: ["product_type"],
+    });
+
+    const productClass = this.productRegistry[productType.product_type];
 
     if (!productClass)
       throw new BadRequestError(`Invalid Product Types ${type}`);
@@ -90,7 +94,7 @@ class ProductFactory {
   }
 
   static async findProduct({ product_id }) {
-    const foundProduct = await findProduct({
+    const foundProduct = await findProductWithUnSelectedFields({
       product_id,
       unSelect: ["createdAt", "updatedAt", "__v"],
     });
@@ -184,7 +188,7 @@ class Electronic extends Product {
       ...currentProduct.product_attributes, // Existing attributes
       ...this.product_attributes, // New attributes (overwriting existing ones)
     };
-    console.log('updatedAttributes', updatedAttributes);
+    console.log("updatedAttributes", updatedAttributes);
 
     this.product_attributes = updatedAttributes;
 

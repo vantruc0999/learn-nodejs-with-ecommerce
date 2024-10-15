@@ -31,7 +31,6 @@ class ProductController {
     new SuccessResponse({
       message: "Update product success",
       metadata: await ProductServiceV2.updateProduct(
-        req.body.product_type,
         req.params.product_id,
         {
           ...req.body,
