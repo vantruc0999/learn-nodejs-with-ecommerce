@@ -17,7 +17,9 @@ const {
   searchProductByUser,
   findAllProducts,
   findProduct,
+  updateProductById,
 } = require("../repositories/product.repository");
+const { removeUndefinedObject, updateNestedObjectParser } = require("../utils");
 
 class ProductFactory {
   static productRegistry = {};
@@ -35,13 +37,13 @@ class ProductFactory {
     return new productClass(payload).createProduct();
   }
 
-  static async updateProduct(type, payload) {
+  static async updateProduct(type, productId, payload) {
     const productClass = this.productRegistry[type];
 
     if (!productClass)
       throw new BadRequestError(`Invalid Product Types ${type}`);
 
-    return new productClass(payload).createProduct();
+    return new productClass(payload).updateProduct(productId);
   }
 
   static async findAllDraftsForShop({ product_shop, limit = 50, skip = 0 }) {
@@ -139,6 +141,10 @@ class Product {
   async createProduct(product_id) {
     return await product.create({ ...this, _id: product_id });
   }
+
+  async updateProduct(productId, payload) {
+    return await updateProductById({ productId, payload, model: product });
+  }
 }
 
 class Clothing extends Product {
@@ -166,8 +172,36 @@ class Electronic extends Product {
       throw new BadRequestError("Create new Electronic error");
 
     const newProduct = await super.createProduct(newElectronic._id);
-    if (!newProduct) throw new BadRequestError("create new product error");
+    if (!newProduct) throw new BadRequestError("Create new product error");
     return newProduct;
+  }
+
+  async updateProduct(productId) {
+    const currentProduct = await product.findById(productId);
+    if (!currentProduct) throw new NotFound("Product not found");
+    // Merge current product attributes with new attributes from the payload
+    const updatedAttributes = {
+      ...currentProduct.product_attributes, // Existing attributes
+      ...this.product_attributes, // New attributes (overwriting existing ones)
+    };
+    console.log('updatedAttributes', updatedAttributes);
+
+    this.product_attributes = updatedAttributes;
+
+    // Remove undefined fields
+    const objectParams = removeUndefinedObject(this);
+
+    // If there are product attributes to update, do so in the related model
+    if (objectParams.product_attributes) {
+      await updateProductById({
+        productId,
+        payload: objectParams.product_attributes,
+        model: electronic,
+      });
+    }
+
+    const updateProduct = await super.updateProduct(productId, objectParams);
+    return updateProduct;
   }
 }
 

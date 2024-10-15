@@ -10,13 +10,17 @@ const {
 
 const router = express.Router();
 
-router.get("/search/:keySearch", asyncHandler(productController.getListSearchProduct));
+router.get(
+  "/search/:keySearch",
+  asyncHandler(productController.getListSearchProduct)
+);
 router.get("", asyncHandler(productController.getAllProducts));
 router.get("/:product_id", asyncHandler(productController.getProduct));
 
 router.use(authenticationV2);
 
 router.post("", asyncHandler(productController.createProduct));
+router.patch("/:product_id", asyncHandler(productController.updateProduct));
 router.post(
   "/published/:id",
   asyncHandler(productController.publishProductByShop)
