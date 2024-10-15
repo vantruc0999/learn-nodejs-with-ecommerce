@@ -28,8 +28,6 @@ const createTokenPair = async (payload, publicKey, privateKey) => {
   }
 };
 
-
-
 const verifyJWT = async (token, keySecret) => {
   return await JWT.verify(token, keySecret);
 };

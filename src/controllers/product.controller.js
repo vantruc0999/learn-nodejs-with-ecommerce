@@ -40,7 +40,7 @@ class ProductController {
 
   async unPublishProductByShop(req, res, next) {
     new SuccessResponse({
-      message: "Un published product success",
+      message: "Unpublished product success",
       metadata: await ProductServiceV2.toggleProductPublishStatus({
         product_id: req.params.id,
         product_shop: req.user.userId,
@@ -78,7 +78,23 @@ class ProductController {
   async getListSearchProduct(req, res, next) {
     new SuccessResponse({
       message: "Get all search results success",
-      metadata: await ProductServiceV2.getListSearchProduct(req.params),
+      metadata: await ProductServiceV2.getListSearchProducts(req.params),
+    }).send(res);
+  }
+
+  async getAllProducts(req, res, next) {
+    new SuccessResponse({
+      message: "Get all products success",
+      metadata: await ProductServiceV2.findAllProducts(req.query),
+    }).send(res);
+  }
+
+  async getProduct(req, res, next) {
+    new SuccessResponse({
+      message: "Get all product success",
+      metadata: await ProductServiceV2.findProduct({
+        product_id: req.params.product_id,
+      }),
     }).send(res);
   }
 }
