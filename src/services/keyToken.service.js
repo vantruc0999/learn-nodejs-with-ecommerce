@@ -62,7 +62,6 @@ class KeyTokenService {
   };
 
   static deleteKeyById = async (userId) => {
-    console.log('hehe');
     return await keyTokenModel.deleteOne({ user: userId });
   };
 }
