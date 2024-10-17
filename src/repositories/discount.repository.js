@@ -15,11 +15,10 @@ const findAllDiscountCodesUnselect = async ({
   sort = "ctime",
   filter,
   unSelect,
-  model,
 }) => {
   const skip = (page - 1) * limit;
   const sortBy = sort === "ctime" ? { _id: -1 } : { _id: 1 };
-  const documents = await model
+  const documents = await discount
     .find(filter)
     .sort(sortBy)
     .skip(skip)
@@ -52,5 +51,5 @@ const findAllDiscountCodesSelect = async ({
 module.exports = {
   findDiscount,
   findAllDiscountCodesUnselect,
-  findAllDiscountCodesSelect
+  findAllDiscountCodesSelect,
 };

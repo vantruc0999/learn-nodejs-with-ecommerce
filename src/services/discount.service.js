@@ -11,7 +11,7 @@ const {
   findAllDiscountCodesUnselect,
 } = require("../repositories/discount.repository");
 const { findAllProducts } = require("../repositories/product.repository");
-
+const discount = require("../models/discount.model");
 /**
  * Discount Services
  * 1 - Generator discount code [Shop|Admin]
@@ -38,8 +38,9 @@ class DiscountService {
       type,
       value,
       max_value,
+      users_used,
       max_uses,
-      use_count,
+      uses_count,
       max_uses_per_user,
     } = payload;
 
@@ -72,23 +73,23 @@ class DiscountService {
       discount_min_order_value: min_order_value || 0,
       discount_shop_id: shop_id,
       discount_is_active: is_active,
-      discount_applies_to: applies_to === "all" ? [] : product_ids,
-      discount_product_ids: product_ids,
+      discount_applies_to: applies_to, // Keep as "specific" or "all"
+      discount_product_ids: applies_to === "specific" ? product_ids : [],
     });
 
     return newDiscount;
   }
 
-  static async getAllDiscountCodesWithProduct({
+  static async getAllDiscountCodesWithProducts({
     code,
     shop_id,
     user_id,
     limit,
     page,
   }) {
-    const foundDiscount = findDiscount(code, shop_id);
+    const foundDiscount = await findDiscount({ code, shop_id });
 
-    if (!foundDiscount || !foundDiscount.is_active) {
+    if (!foundDiscount || !foundDiscount.discount_is_active) {
       throw new NotFound("discount not exists");
     }
 
@@ -129,11 +130,100 @@ class DiscountService {
       page: +page,
       filter: {
         discount_shop_id: shop_id,
-        discount_is_actie: true,
+        discount_is_active: true,
       },
       unselect: ["__v", "discount_shop_id"],
     });
 
     return discounts;
   }
+
+  static async getDiscountAmount({ code, user_id, shop_id, products }) {
+    const foundDiscount = await findDiscount({ code, shop_id });
+
+    if (!foundDiscount) throw new NotFound("discount not exists");
+    console.log(foundDiscount);
+    const {
+      discount_is_active,
+      discount_max_uses,
+      discount_min_order_value,
+      discount_users_used,
+      discount_start_date,
+      discount_end_date,
+      discount_max_uses_per_user,
+      discount_type,
+      discount_value,
+    } = foundDiscount;
+
+    if (!discount_is_active) throw new NotFound("discount expired");
+    if (!discount_max_uses) throw new NotFound("discount are out");
+
+    if (
+      new Date() < new Date(discount_start_date) &&
+      new Date() > new Date(discount_end_date)
+    ) {
+      throw new BadRequestError("Discount code has expired");
+    }
+
+    let totalOrder = 0;
+
+    if (discount_min_order_value > 0) {
+      totalOrder = products.reduce((acc, product) => {
+        return acc + product.quantity * product.price;
+      }, 0);
+    }
+
+    if (totalOrder < discount_min_order_value) {
+      throw new NotFound(
+        `discount requires a min order value of ${discount_min_order_value}`
+      );
+    }
+
+    if (discount_max_uses_per_user > 0) {
+      const userDiscount = discount_users_used.find(
+        (user) => user.userId == user_id
+      );
+      if (userDiscount) {
+      }
+    }
+
+    const amount =
+      discount_type === "fixed_amount"
+        ? discount_value
+        : totalOrder * (discount_value / 100);
+
+    return {
+      totalOrder,
+      discount: amount,
+      totalPrice: totalOrder - amount,
+    };
+  }
+
+  static async deleteDiscountCode({ shop_id, code_id }) {
+    const deleted = await discount.findOneAndDelete({
+      discount_code: code_id,
+      discount_shop_id: shop_id,
+    });
+    return deleted;
+  }
+
+  static async cancelDiscountCode({ code_id, shop_id, user_id }) {
+    const foundDiscount = findDiscount({ code_id, shop_id });
+
+    if (!foundDiscount) throw new NotFound("discount not exists");
+
+    const result = await discount.findByIdAndUpdate(foundDiscount._id, {
+      $pull: {
+        discount_users_used: user_id,
+      },
+      $inc: {
+        discount_max_uses: 1,
+        discount_uses_count: -1,
+      },
+    });
+
+    return result;
+  }
 }
+
+module.exports = DiscountService;
