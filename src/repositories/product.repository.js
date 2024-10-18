@@ -80,6 +80,10 @@ const getProductByIdAndShop = async ({ product_shop, product_id }) => {
   });
 };
 
+const getProductById = async (productId) => {
+  return await product.findOne({ _id: productId }).lean();
+};
+
 const updateProductPublishStatus = async (foundShop, isPublish) => {
   foundShop.isDraft = !isPublish;
   foundShop.isPublished = isPublish;
@@ -91,6 +95,7 @@ const updateProductPublishStatus = async (foundShop, isPublish) => {
 module.exports = {
   findAllDraftsForShop,
   getProductByIdAndShop,
+  getProductById,
   findAllPublishedForShop,
   updateProductPublishStatus,
   updateProductById,

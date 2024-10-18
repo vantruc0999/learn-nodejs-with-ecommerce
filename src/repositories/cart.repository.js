@@ -17,8 +17,13 @@ async function saveCart(userCart) {
   return await userCart.save();
 }
 
+async function updateCart({ query, updateSet }) {
+  return await cart.updateOne(query, updateSet);
+}
+
 module.exports = {
   findUserCart,
   createOrUpdateUserCart,
   saveCart,
+  updateCart
 };
