@@ -92,6 +92,21 @@ const updateProductPublishStatus = async (foundShop, isPublish) => {
   return modifiedCount;
 };
 
+const checkProductByServer = async (products) => {
+  return await Promise.all(
+    products.map(async (product) => {
+      const foundProduct = await getProductById(product.productId);
+      if (foundProduct) {
+        return {
+          price: foundProduct.product_price,
+          quantity: product.quantity,
+          productId: product.productId,
+        };
+      }
+    })
+  );
+};
+
 module.exports = {
   findAllDraftsForShop,
   getProductByIdAndShop,
@@ -103,4 +118,5 @@ module.exports = {
   findAllProducts,
   findProductWithUnSelectedFields,
   findProductWithSelectedFields,
+  checkProductByServer,
 };
