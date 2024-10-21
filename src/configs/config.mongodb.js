@@ -7,6 +7,7 @@ const dev = {
     port: process.env.DEV_APP_PORT || 27017,
     user: process.env.DEV_APP_USER || "",
     password: process.env.DEV_APP_PASSWORD || "",
+    dbName: process.env.DEV_APP_DB_NAME || "",
   },
 };
 

@@ -2,11 +2,11 @@
 
 const mongoose = require("mongoose");
 const {
-  db: { host, port, user, password },
+  db: { host, port, user, password, dbName },
 } = require("../configs/config.mongodb");
 const { countConnect } = require("../helpers/check.connect");
 
-const connectString = `mongodb://${user}:${password}@${host}:${port}`;
+const connectString = `mongodb://${user}:${password}@${host}:${port}/${dbName}?authSource=admin`;
 
 class Database {
   constructor() {
