@@ -7,7 +7,7 @@ class CheckoutController {
   checkoutReview = async (req, res, next) => {
     new SuccessResponse({
       message: "Review discount successfully",
-      metadata: await CheckoutService.checkoutReview(req.body),
+      metadata: await CheckoutService.checkoutReview({ ...req.body }),
     }).send(res);
   };
 }

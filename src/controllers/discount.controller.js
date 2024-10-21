@@ -34,7 +34,6 @@ class DiscountController {
   };
 
   getAllDiscountCodesWithProducts = async (req, res, next) => {
-    console.log(req.query);
     new SuccessResponse({
       message: "Get all discount codes successfully",
       metadata: await DiscountService.getAllDiscountCodesWithProducts({

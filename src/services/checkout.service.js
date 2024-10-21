@@ -50,22 +50,22 @@ const DiscountService = require("./discount.service");
 */
 
 class CheckoutService {
-  static async checkOutReview({ cartId, userId, shop_order_ids }) {
+  static async checkoutReview({ cartId, userId, shop_order_ids }) {
     const foundCart = await findCartById(cartId);
     if (!foundCart) throw new NotFound("Cart does not exists");
 
     const checkout_order = {
-        totalPrice: 0,
-        freeShip: 0,
-        totalDiscount: 0,
-        totalCheckout: 0,
-      },
+      totalPrice: 0,
+      freeShip: 0,
+      totalDiscount: 0,
+      totalCheckout: 0,
+    },
       shop_order_ids_new = [];
 
     for (let i = 0; i < shop_order_ids.length; i++) {
       const {
         shopId,
-        shop_discount = [],
+        shop_discounts = [],
         item_products = [],
       } = shop_order_ids[i];
 
@@ -74,7 +74,7 @@ class CheckoutService {
       if (!checkProductServer[0]) throw new BadRequestError("Order wrong");
       console.log("checkProductServer::", checkProductServer);
 
-      const checkoutPrice = checkProductByServer.reduce((acc, product) => {
+      const checkoutPrice = checkProductServer.reduce((acc, product) => {
         return acc + product.quantity * product.price;
       }, 0);
 
@@ -92,9 +92,9 @@ class CheckoutService {
         //assume there's one discount
         const { totalPrice = 0, discount = 0 } =
           await DiscountService.getDiscountAmount({
-            codeId: shop_discounts[0].codeId,
-            shopId,
-            userId,
+            code: shop_discounts[0].codeId,
+            shop_id: shopId,
+            user_id: userId,
             products: checkProductServer,
           });
 
@@ -117,4 +117,4 @@ class CheckoutService {
   }
 }
 
-module.exports = new CheckoutService();
+module.exports = CheckoutService;

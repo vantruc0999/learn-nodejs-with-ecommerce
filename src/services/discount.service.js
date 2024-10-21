@@ -81,13 +81,12 @@ class DiscountService {
   }
 
   static async getAllDiscountCodesWithProducts({
-    code,
-    shop_id,
-    user_id,
+    codeId,
+    shopId,
     limit,
     page,
   }) {
-    const foundDiscount = await findDiscount({ code, shop_id });
+    const foundDiscount = await findDiscount({ codeId, shopId });
 
     if (!foundDiscount || !foundDiscount.discount_is_active) {
       throw new NotFound("discount not exists");
@@ -98,7 +97,7 @@ class DiscountService {
     if (discount_applies_to === "all") {
       products = findAllProducts({
         filter: {
-          product_shop: shop_id,
+          product_shop: shopId,
           isPublished: true,
         },
         limit: +limit,
@@ -109,7 +108,8 @@ class DiscountService {
     }
 
     if (discount_applies_to === "specific") {
-      products = findAllProducts({
+      console.log('discount_product_ids', discount_product_ids);
+      products = await findAllProducts({
         filter: {
           _id: { $in: discount_product_ids },
           isPublished: true,
@@ -139,10 +139,9 @@ class DiscountService {
   }
 
   static async getDiscountAmount({ code, user_id, shop_id, products }) {
-    const foundDiscount = await findDiscount({ code, shop_id });
+    const foundDiscount = await findDiscount({ codeId: code, shopId: shop_id });
 
     if (!foundDiscount) throw new NotFound("discount not exists");
-    console.log(foundDiscount);
     const {
       discount_is_active,
       discount_max_uses,
