@@ -3,9 +3,9 @@
 const discount = require("../models/discount.model");
 const { getSelectData, omitData } = require("../utils");
 
-const findDiscount = async ({ code, shop_id }) => {
+const findDiscount = async ({ codeId, shopId }) => {
   return await discount
-    .findOne({ discount_code: code, discount_shop_id: shop_id })
+    .findOne({ discount_code: codeId, discount_shop_id: shopId })
     .lean();
 };
 
