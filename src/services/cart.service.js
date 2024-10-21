@@ -1,6 +1,7 @@
 "use strict";
 
 const { NotFound } = require("../core/error.response");
+const cart = require("../models/cart.model");
 const cartRepository = require("../repositories/cart.repository");
 const { getProductById } = require("../repositories/product.repository");
 
@@ -25,10 +26,10 @@ class CartService {
     const { productId, quantity } = product;
 
     const query = {
-        cart_user_id: userId,
-        "cart_products.productId": productId,
-        cart_state: "active",
-      },
+      cart_user_id: userId,
+      "cart_products.productId": productId,
+      cart_state: "active",
+    },
       updateSet = {
         $inc: {
           "cart_products.$.quantity": quantity,
@@ -46,16 +47,23 @@ class CartService {
   static async addToCart({ userId, product = {} }) {
     const userCart = await cartRepository.findUserCart({ userId });
 
-    if (!userCart) {
+    if (!userCart || userCart.cart_products.length === 0) {
+      // Nếu giỏ hàng chưa tồn tại hoặc rỗng, tạo mới giỏ hàng và thêm sản phẩm
       return await this.createUserCart({ userId, product });
     }
 
-    if (userCart.cart_products.length === 0) {
-      userCart.cart_products = [product]; // Sửa lỗi từ 'products' thành 'product'
-      return await cartRepository.saveCart(userCart);
-    }
+    // Kiểm tra xem sản phẩm đã tồn tại trong giỏ hàng chưa
+    const existingProduct = userCart.cart_products.find(
+      (p) => p.productId.toString() === product.productId.toString()
+    );
 
-    return await this.updateUserCartQuantity({ userId, product });
+    if (existingProduct) {
+      // Nếu sản phẩm đã tồn tại, cập nhật số lượng
+      return await this.updateUserCartQuantity({ userId, product });
+    } else {
+      // Nếu sản phẩm chưa tồn tại, thêm sản phẩm mới vào giỏ hàng
+      return await this.createUserCart({ userId, product });
+    }
   }
 
   static async addToCartV2({ userId, shop_order_ids = [] }) {
@@ -94,11 +102,7 @@ class CartService {
   }
 
   static async getListUserCart({ userId }) {
-    return await cart
-      .findOne({
-        cart_user_id: +userId,
-      })
-      .lean();
+    return await cartRepository.findUserCart({ userId });
   }
 }
 
