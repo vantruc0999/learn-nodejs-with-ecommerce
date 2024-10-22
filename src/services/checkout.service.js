@@ -4,6 +4,7 @@ const { NotFound, BadRequestError } = require("../core/error.response");
 const { findCartById } = require("../repositories/cart.repository");
 const { checkProductByServer } = require("../repositories/product.repository");
 const DiscountService = require("./discount.service");
+const { acquireLock, releaseLock } = require("./redis.service");
 
 /*
     Payload:
@@ -114,6 +115,63 @@ class CheckoutService {
       shop_order_ids_new,
       checkout_order,
     };
+  }
+
+  static async orderByUser({
+    shop_order_ids,
+    cartId,
+    userId,
+    user_address = {},
+    user_payment = {}
+  }) {
+    const { shop_order_ids_new, checkout_order } = await CheckoutService.checkoutReview({
+      cartId,
+      userId,
+      shop_order_ids
+    })
+
+    const products = shop_order_ids_new.flatMap(order => order.item_products)
+    console.log(`[1]:`, products)
+    const acquireProduct = []
+
+    for (let i = 0; i < products.length; i++) {
+      const { productId, quantity } = products[i];
+      const keyLock = await acquireLock(productId, quantity, cartId)
+
+      acquireProduct.push(keyLock ? true : false)
+
+      if (keyLock) {
+        await releaseLock(keyLock)
+      }
+    }
+
+    if (acquireProduct.includes(false)) {
+      throw new BadRequestError('Some products have been updated, please return cart...')
+    }
+
+    const newOrder = create({ userId, checkout_order, user_address, user_payment, shop_order_ids_new })
+
+    if (newOrder) {
+
+    }
+
+    return newOrder
+  }
+
+  static async getOrdersByUser(){
+
+  }
+
+  static async getDetailOrderByUser(){
+
+  }
+
+  static async cancelOrderByUser(){
+
+  }
+
+  static async updateOrderStatusByShop(){
+    
   }
 }
 
