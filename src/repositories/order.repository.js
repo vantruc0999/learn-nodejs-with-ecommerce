@@ -2,7 +2,7 @@
 
 const order = require("../models/order.model")
 
-create = async ({ userId, checkout_order, user_address, user_payment, shop_order_ids_new }) => {
+const create = async ({ userId, checkout_order, user_address, user_payment, shop_order_ids_new }) => {
     return await order.create({
         order_user_id: userId,
         order_checkout: checkout_order,

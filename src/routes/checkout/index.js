@@ -7,5 +7,6 @@ const asyncHandler = require("../../helpers/asyncHandler");
 const router = express.Router();
 
 router.post("/review", asyncHandler(checkoutController.checkoutReview));
+router.post("/order", asyncHandler(checkoutController.orderByUser));
 
 module.exports = router;

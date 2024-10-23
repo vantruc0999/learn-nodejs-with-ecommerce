@@ -2,6 +2,7 @@
 
 const { NotFound, BadRequestError } = require("../core/error.response");
 const { findCartById } = require("../repositories/cart.repository");
+const { create } = require("../repositories/order.repository");
 const { checkProductByServer } = require("../repositories/product.repository");
 const DiscountService = require("./discount.service");
 const { acquireLock, releaseLock } = require("./redis.service");
@@ -124,7 +125,7 @@ class CheckoutService {
     user_address = {},
     user_payment = {}
   }) {
-    const { shop_order_ids_new, checkout_order } = await CheckoutService.checkoutReview({
+    const { shop_order_ids_new, checkout_order } = await this.checkoutReview({
       cartId,
       userId,
       shop_order_ids
