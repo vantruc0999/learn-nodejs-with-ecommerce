@@ -1,10 +1,8 @@
 "use strict";
 
-const { status } = require("express/lib/response");
-const shopModel = require("../models/shop.model");
 const bcrypt = require("bcrypt");
 const crypto = require("node:crypto");
-const KeyTokenService = require("./keyToken.service");
+const KeyTokenService = require("./key-token.service");
 const { createTokenPair, verifyJWT } = require("../utils/jwt");
 const { getInfoData } = require("../utils");
 const {
@@ -14,6 +12,7 @@ const {
   Forbidden,
 } = require("../core/error.response");
 const { findByEmail } = require("./shop.service");
+const { create } = require("../repositories/shop.repository");
 
 const RoleShop = {
   SHOP: "SHOP",
@@ -65,17 +64,17 @@ class AuthService {
   };
 
   static signUp = async ({ name, email, password }) => {
-    const holderShop = await shopModel.findOne({ email }).lean();
+    const holderShop = await findByEmail(email);
 
     if (holderShop) {
       throw new ConflictRequestError("Shop already registered");
     }
-    const passwordHash = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newShop = await shopModel.create({
+    const newShop = await create({
       name,
       email,
-      password: passwordHash,
+      password: hashedPassword,
       roles: [RoleShop.SHOP],
     });
 
