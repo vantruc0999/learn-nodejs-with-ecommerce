@@ -2,7 +2,7 @@
 
 const express = require("express");
 const cartController = require("../../controllers/cart.controller");
-const asyncHandler = require("../../helpers/asyncHandler");
+const asyncHandler = require("../../helpers/async-handler");
 
 const router = express.Router();
 

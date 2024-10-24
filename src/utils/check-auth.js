@@ -5,7 +5,7 @@ const HEADER = {
   AUTHORIZATION: "authorization",
 };
 
-const { findById } = require("../services/apiKey.service");
+const { findById } = require("../services/api-key.service");
 
 const apiKey = async (req, res, next) => {
   try {

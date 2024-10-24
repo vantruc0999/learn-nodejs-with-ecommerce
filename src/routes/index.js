@@ -1,7 +1,7 @@
 "use strict";
 
 const express = require("express");
-const { apiKey, permission } = require("../utils/checkAuth");
+const { apiKey, permission } = require("../utils/check-auth");
 const router = express.Router();
 
 //check apiKey

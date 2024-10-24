@@ -2,7 +2,7 @@
 
 const express = require("express");
 const discountController = require("../../controllers/discount.controller");
-const asyncHandler = require("../../helpers/asyncHandler");
+const asyncHandler = require("../../helpers/async-handler");
 const { authenticationV2 } = require("../../middlewares/authentication");
 
 const router = express.Router();

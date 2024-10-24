@@ -3,7 +3,7 @@
 const {
   Types: { ObjectId },
 } = require("mongoose");
-const keyTokenModel = require("../models/keyToken.model");
+const keyTokenModel = require("../models/key-token.model");
 
 class KeyTokenService {
   static createKeyToken = async ({
