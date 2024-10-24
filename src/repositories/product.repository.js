@@ -43,8 +43,8 @@ const findAllProducts = async ({ limit, sort, page, filter, select }) => {
   return products;
 };
 
-const findProductWithUnSelectedFields = async ({ product_id, unSelect }) => {
-  return await product.findById(product_id).select(omitData(unSelect));
+const findProductWithUnSelectedFields = async ({ productId, unSelect }) => {
+  return await product.findById(productId).select(omitData(unSelect));
 };
 
 const findProductWithSelectedFields = async ({ productId, select }) => {
@@ -65,7 +65,7 @@ const updateProductById = async ({
 const queryProduct = async ({ query, limit, skip }) => {
   return await product
     .find(query)
-    .populate("product_shop", "name email -_id")
+    .populate("productShop", "name email -_id")
     .sort({ updatedAt: -1 })
     .skip(skip)
     .limit(limit)
@@ -73,10 +73,10 @@ const queryProduct = async ({ query, limit, skip }) => {
     .exec();
 };
 
-const getProductByIdAndShop = async ({ product_shop, product_id }) => {
+const getProductByIdAndShop = async ({ productShop, productId }) => {
   return await product.findOne({
-    product_shop,
-    _id: product_id,
+    producSshop,
+    _id: productId,
   });
 };
 
@@ -98,7 +98,7 @@ const checkProductByServer = async (products) => {
       const foundProduct = await getProductById(product.productId);
       if (foundProduct) {
         return {
-          price: foundProduct.product_price,
+          price: foundProduct.productPrice,
           quantity: product.quantity,
           productId: product.productId,
         };

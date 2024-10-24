@@ -32,7 +32,7 @@ const acquireLock = async (productId, quantity, cartId) => {
             const inventoryItem = await findInventoryByProduct(productId);
 
             // Kiểm tra nếu số lượng tồn kho đủ
-            if (!inventoryItem || inventoryItem.invent_stock < quantity) {
+            if (!inventoryItem || inventoryItem.inventStock < quantity) {
                 // Giải phóng khóa nếu không đủ hàng và báo lỗi
                 await releaseLock(key);
                 throw new Error("Not enough stock available");

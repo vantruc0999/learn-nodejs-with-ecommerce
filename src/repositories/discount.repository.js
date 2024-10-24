@@ -5,7 +5,7 @@ const { getSelectData, omitData } = require("../utils");
 
 const findDiscount = async ({ codeId, shopId }) => {
   return await discount
-    .findOne({ discount_code: codeId, discount_shop_id: shopId })
+    .findOne({ discountCode: codeId, discountShopId: shopId })
     .lean();
 };
 

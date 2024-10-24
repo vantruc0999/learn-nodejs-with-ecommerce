@@ -1,6 +1,6 @@
 "use strict";
 
-const { CREATED, SuccessResponse } = require("../core/success.response");
+const { SuccessResponse } = require("../core/success.response");
 const InventoryService = require("../services/inventory.service");
 
 class InventoryController {

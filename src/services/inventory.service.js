@@ -10,13 +10,13 @@ class InventoryService {
 
         if (!product) throw new BadRequestError('Product not exists')
 
-        const query = { invent_shop_id: shopId, invent_product_id: productId },
+        const query = { inventShopId: shopId, inventProductId: productId },
             updateSet = {
                 $inc: {
-                    invent_stock: stock
+                    inventStock: stock
                 },
                 $set: {
-                    invent_location: location
+                    inventLocation: location
                 }
             },
             options = {

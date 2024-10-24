@@ -7,26 +7,26 @@ const COLLECTION_NAME = "Discounts";
 
 const discountSchema = new Schema(
   {
-    discount_name: { type: String, required: true },
-    discount_description: { type: String, required: true },
-    discount_type: { type: String, default: "fixed_amount" }, // or percentage
-    discount_value: { type: Number, required: true },
-    discount_code: { type: String, required: true },
-    discount_start_date: { type: Date, required: true },
-    discount_end_date: { type: Date, required: true },
-    discount_max_uses: { type: Number, required: true }, // number of discount apply
-    discount_uses_count: { type: Number, required: true }, // number of discount used
-    discount_users_used: { type: Array, default: [] }, //people who used discount
-    discount_max_uses_per_user: { type: Number, required: true },
-    discount_min_order_value: { type: Number, required: true },
-    discount_shop_id: { type: Schema.Types.ObjectId, ref: "Shop" },
-    discount_is_active: { type: Boolean, required: true },
-    discount_applies_to: {
+    discountName: { type: String, required: true },
+    discountDescription: { type: String, required: true },
+    discountType: { type: String, default: "fixedAmount" }, // or percentage
+    discountValue: { type: Number, required: true },
+    discountCode: { type: String, required: true },
+    discountStartDate: { type: Date, required: true },
+    discountEndDate: { type: Date, required: true },
+    discountMaxUses: { type: Number, required: true }, // number of discount apply
+    discountUsesCount: { type: Number, required: true }, // number of discount used
+    discountUsersUsed: { type: Array, default: [] }, //people who used discount
+    discountMaxUsesPerUser: { type: Number, required: true },
+    discountMinOrderValue: { type: Number, required: true },
+    discountShopId: { type: Schema.Types.ObjectId, ref: "Shop" },
+    discountIsActive: { type: Boolean, required: true },
+    discountAppliesTo: {
       type: String,
       required: true,
       enum: ["all", "specific"],
     },
-    discount_product_ids: { type: Array, default: [] },
+    discountProductIds: { type: Array, default: [] },
   },
   {
     timestamps: true,

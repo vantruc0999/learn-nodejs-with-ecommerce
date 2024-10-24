@@ -7,8 +7,8 @@ const COLLECTION_NAME = "Orders";
 
 const orderSchema = new Schema(
     {
-        order_user_id: { type: Number, required: true },
-        order_checkout: { type: Object, default: {} },
+        orderUserId: { type: Number, required: true },
+        orderCheckout: { type: Object, default: {} },
         /*
             order_checkout = {
                 totalPrice,
@@ -16,7 +16,7 @@ const orderSchema = new Schema(
                 freeShip
             }
         */
-        order_shipping: {
+        orderShipping: {
             type: Object, default: {},
             /*
                 street,
@@ -25,12 +25,12 @@ const orderSchema = new Schema(
                 country
             */
         },
-        order_payment: { type: Object, default: {} },
-        order_products: { type: Array, required: true },
-        order_trackingNumber: {
+        orderPayment: { type: Object, default: {} },
+        orderProducts: { type: Array, required: true },
+        orderTrackingNumber: {
             type: String, default: '#000022102024'
         },
-        order_status: {
+        orderStatus: {
             type: String,
             enum: ['pending', 'confirmed', 'shipped', 'cancelled', 'delivered'],
             default: 'pending'

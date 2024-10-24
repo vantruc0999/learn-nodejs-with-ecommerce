@@ -40,10 +40,10 @@ class ProductFactory {
   static async updateProduct(productId, payload) {
     const productType = await findProductWithSelectedFields({
       productId,
-      select: ["product_type"],
+      select: ["productType"],
     });
 
-    const productClass = this.productRegistry[productType.product_type];
+    const productClass = this.productRegistry[productType.productType];
 
     if (!productClass)
       throw new BadRequestError(`Invalid Product Types ${type}`);
@@ -51,28 +51,28 @@ class ProductFactory {
     return new productClass(payload).updateProduct(productId);
   }
 
-  static async findAllDraftsForShop({ product_shop, limit = 50, skip = 0 }) {
-    const query = { product_shop, isDraft: true };
+  static async findAllDraftsForShop({ productShop, limit = 50, skip = 0 }) {
+    const query = { productShop, isDraft: true };
     return await findAllDraftsForShop({ query, limit, skip });
   }
 
-  static async findAllPublishedForShop({ product_shop, limit = 50, skip = 0 }) {
-    const query = { product_shop, isDraft: false };
+  static async findAllPublishedForShop({ productShop, limit = 50, skip = 0 }) {
+    const query = { productShop, isDraft: false };
     return await findAllPublishedForShop({ query, limit, skip });
   }
 
   static async toggleProductPublishStatus({
-    product_shop,
-    product_id,
-    isPublish,
+    productShop,
+    productId,
+    isPublished,
   }) {
-    const foundShop = await getProductByIdAndShop({ product_shop, product_id });
+    const foundShop = await getProductByIdAndShop({ productShop, productId });
 
     if (!foundShop) {
       throw new NotFound("Shop not found !!!");
     }
 
-    return await updateProductPublishStatus(foundShop, isPublish);
+    return await updateProductPublishStatus(foundShop, isPublished);
   }
 
   static async getListSearchProducts({ keySearch }) {
@@ -90,13 +90,13 @@ class ProductFactory {
       sort,
       page,
       filter,
-      select: ["product_name", "product_price", "product_thumb", "product_shop"],
+      select: ["productName", "productPrice", "productThumb", "productShop"],
     });
   }
 
-  static async findProduct({ product_id }) {
+  static async findProduct({ productId }) {
     const foundProduct = await findProductWithUnSelectedFields({
-      product_id,
+      productId,
       unSelect: ["createdAt", "updatedAt", "__v"],
     });
 
@@ -107,49 +107,49 @@ class ProductFactory {
 }
 
 /**
- * product_name: { type: String, required: true },
-    product_thumb: { type: String, required: true },
-    product_description: { type: String },
-    product_price: { type: Number, required: true },
-    product_quantity: { type: Number, required: true },
-    product_type: {
+ * productName: { type: String, required: true },
+    productThumb: { type: String, required: true },
+    productDescription: { type: String },
+    productPrice: { type: Number, required: true },
+    productQuantity: { type: Number, required: true },
+    productType: {
       type: String,
       required: true,
       enum: ["Electronics", "Clothing", "Furniture"],
     },
-    product_shop: { type: Schema.Types.ObjectId, ref: "Shop" },
-    product_attributes: { type: Schema.Types.Mixed },
+    productShop: { type: Schema.Types.ObjectId, ref: "Shop" },
+    productAttributes: { type: Schema.Types.Mixed },
     required: true,
  */
 
 class Product {
   constructor({
-    product_name,
-    product_thumb,
-    product_description,
-    product_price,
-    product_quantity,
-    product_type,
-    product_shop,
-    product_attributes,
+    productName,
+    productThumb,
+    productDescription,
+    productPrice,
+    productQuantity,
+    productType,
+    productShop,
+    productAttributes,
   }) {
-    this.product_name = product_name;
-    this.product_thumb = product_thumb;
-    this.product_description = product_description;
-    this.product_price = product_price;
-    this.product_quantity = product_quantity;
-    this.product_type = product_type;
-    this.product_shop = product_shop;
-    this.product_attributes = product_attributes;
+    this.productName = productName;
+    this.productThumb = productThumb;
+    this.productDescription = productDescription;
+    this.productPrice = productPrice;
+    this.productQuantity = productQuantity;
+    this.productType = productType;
+    this.productShop = productShop;
+    this.productAttributes = productAttributes;
   }
 
-  async createProduct(product_id) {
-    const newProduct = await product.create({ ...this, _id: product_id });
+  async createProduct(productId) {
+    const newProduct = await product.create({ ...this, _id: productId });
     if (newProduct) {
       await insertInventory({
         productId: newProduct._id,
-        shopId: this.product_shop,
-        stock: this.product_quantity,
+        shopId: this.productShop,
+        stock: this.productQuantity,
       });
     }
     return newProduct;
@@ -163,8 +163,8 @@ class Product {
 class Clothing extends Product {
   async createProduct() {
     const newClothing = await clothing.create({
-      ...this.product_attributes,
-      product_shop: this.product_shop,
+      ...this.productAttributes,
+      productShop: this.productShop,
     });
     if (!newClothing) throw new BadRequestError("Create new clothing error");
 
@@ -178,8 +178,8 @@ class Clothing extends Product {
 class Electronic extends Product {
   async createProduct() {
     const newElectronic = await electronic.create({
-      ...this.product_attributes,
-      product_shop: this.product_shop,
+      ...this.productAttributes,
+      productShop: this.productShop,
     });
     if (!newElectronic)
       throw new BadRequestError("Create new Electronic error");
@@ -194,21 +194,21 @@ class Electronic extends Product {
     if (!currentProduct) throw new NotFound("Product not found");
     // Merge current product attributes with new attributes from the payload
     const updatedAttributes = {
-      ...currentProduct.product_attributes, // Existing attributes
-      ...this.product_attributes, // New attributes (overwriting existing ones)
+      ...currentProduct.productAttributes, // Existing attributes
+      ...this.productAttributes, // New attributes (overwriting existing ones)
     };
     console.log("updatedAttributes", updatedAttributes);
 
-    this.product_attributes = updatedAttributes;
+    this.productAttributes = updatedAttributes;
 
     // Remove undefined fields
     const objectParams = removeUndefinedObject(this);
 
     // If there are product attributes to update, do so in the related model
-    if (objectParams.product_attributes) {
+    if (objectParams.productAttributes) {
       await updateProductById({
         productId,
-        payload: objectParams.product_attributes,
+        payload: objectParams.productAttributes,
         model: electronic,
       });
     }
@@ -221,8 +221,8 @@ class Electronic extends Product {
 class Furniture extends Product {
   async createProduct() {
     const newFurniture = await furniture.create({
-      ...this.product_attributes,
-      product_shop: this.product_shop,
+      ...this.productAttributes,
+      productShop: this.productShop,
     });
     if (!newFurniture) throw new BadRequestError("Create new Furniture error");
 

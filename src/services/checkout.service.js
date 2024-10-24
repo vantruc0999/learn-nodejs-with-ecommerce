@@ -13,7 +13,7 @@ const { acquireLock, releaseLock } = require("./redis.service");
     {
     "cartId": "",
     "userId": "",
-    "shop_order_ids": [
+    "shopOrderIds": [
         {
             "shopId": "",
             "shop_discount": [
@@ -23,7 +23,7 @@ const { acquireLock, releaseLock } = require("./redis.service");
                     "productId": ""
                 }
             ],
-            "item_products": [
+            "itemProducts": [
                 {
                     "price": "",
                     "quantity": "",
@@ -40,7 +40,7 @@ const { acquireLock, releaseLock } = require("./redis.service");
                     "productId": ""
                 }
             ],
-            "item_products": [
+            "itemProducts": [
                 {
                     "price": "",
                     "quantity": "",
@@ -53,26 +53,26 @@ const { acquireLock, releaseLock } = require("./redis.service");
 */
 
 class CheckoutService {
-  static async checkoutReview({ cartId, userId, shop_order_ids }) {
+  static async checkoutReview({ cartId, userId, shopOrderIds }) {
     const foundCart = await findCartById(cartId);
     if (!foundCart) throw new NotFound("Cart does not exists");
 
-    const checkout_order = {
+    const checkoutOrder = {
       totalPrice: 0,
       freeShip: 0,
       totalDiscount: 0,
       totalCheckout: 0,
     },
-      shop_order_ids_new = [];
+      newShopOrderIds = [];
 
-    for (let i = 0; i < shop_order_ids.length; i++) {
+    for (let i = 0; i < shopOrderIds.length; i++) {
       const {
         shopId,
-        shop_discounts = [],
-        item_products = [],
-      } = shop_order_ids[i];
+        shopDiscounts = [],
+        itemProducts = [],
+      } = shopOrderIds[i];
 
-      const checkProductServer = await checkProductByServer(item_products);
+      const checkProductServer = await checkProductByServer(itemProducts);
 
       if (!checkProductServer[0]) throw new BadRequestError("Order wrong");
       console.log("checkProductServer::", checkProductServer);
@@ -81,58 +81,58 @@ class CheckoutService {
         return acc + product.quantity * product.price;
       }, 0);
 
-      checkout_order.totalPrice += checkoutPrice;
+      checkoutOrder.totalPrice += checkoutPrice;
 
       const itemCheckOut = {
         shopId,
-        shop_discounts,
-        price_raw: checkoutPrice,
-        price_apply_discount: checkoutPrice,
-        item_products: checkProductServer,
+        shopDiscounts,
+        priceRaw: checkoutPrice,
+        priceApplyDiscount: checkoutPrice,
+        itemProducts: checkProductServer,
       };
 
-      if (shop_discounts.length > 0) {
+      if (shopDiscounts.length > 0) {
         //assume there's one discount
         const { totalPrice = 0, discount = 0 } =
           await DiscountService.getDiscountAmount({
-            code: shop_discounts[0].codeId,
-            shop_id: shopId,
-            user_id: userId,
+            code: shopDiscounts[0].codeId,
+            shopId: shopId,
+            userId: userId,
             products: checkProductServer,
           });
 
-        checkout_order.totalDiscount += discount;
+        checkoutOrder.totalDiscount += discount;
 
         if (discount > 0) {
-          itemCheckOut.price_apply_discount = checkoutPrice - discount;
+          itemCheckOut.priceApplyDiscount = checkoutPrice - discount;
         }
       }
 
-      checkout_order.totalCheckout += itemCheckOut.price_apply_discount;
-      shop_order_ids_new.push(itemCheckOut);
+      checkoutOrder.totalCheckout += itemCheckOut.priceApplyDiscount;
+      newShopOrderIds.push(itemCheckOut);
     }
 
     return {
-      shop_order_ids,
-      shop_order_ids_new,
-      checkout_order,
+      shopOrderIds,
+      newShopOrderIds,
+      checkoutOrder,
     };
   }
 
   static async orderByUser({
-    shop_order_ids,
+    shopOrderIds,
     cartId,
     userId,
-    user_address = {},
-    user_payment = {}
+    userAddress = {},
+    userPayment = {}
   }) {
-    const { shop_order_ids_new, checkout_order } = await this.checkoutReview({
+    const { newShopOrderIds, checkoutOrder } = await this.checkoutReview({
       cartId,
       userId,
-      shop_order_ids
+      shopOrderIds
     })
 
-    const products = shop_order_ids_new.flatMap(order => order.item_products)
+    const products = newShopOrderIds.flatMap(order => order.itemProducts)
     console.log(`[1]:`, products)
     const acquireProduct = []
 
@@ -151,7 +151,7 @@ class CheckoutService {
       throw new BadRequestError('Some products have been updated, please return cart...')
     }
 
-    const newOrder = create({ userId, checkout_order, user_address, user_payment, shop_order_ids_new })
+    const newOrder = create({ userId, checkoutOrder, userAddress, userPayment, newShopOrderIds })
 
     const productIds = products.map(product => product.productId);
 

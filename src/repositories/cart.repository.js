@@ -4,11 +4,11 @@ const cart = require("../models/cart.model");
 
 // Tìm giỏ hàng của người dùng theo userId và trạng thái
 async function findUserCart({ userId, state = "active" }) {
-  return await cart.findOne({ cart_user_id: userId, cart_state: state });
+  return await cart.findOne({ cartUserId: userId, cartState: state });
 }
 
 async function findCartById(cartId) {
-  return await cart.findOne({ _id: cartId, cart_state: "active" }).lean();
+  return await cart.findOne({ _id: cartId, cartState: "active" }).lean();
 }
 
 // Tạo hoặc cập nhật giỏ hàng của người dùng

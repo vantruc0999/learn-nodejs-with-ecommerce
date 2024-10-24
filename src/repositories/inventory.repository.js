@@ -1,6 +1,6 @@
 "use strict";
 
-const inventory = require("../models/inventory.model");
+const inventoryModel = require("../models/inventory.model");
 
 const insertInventory = async ({
   productId,
@@ -8,37 +8,37 @@ const insertInventory = async ({
   stock,
   location = "unknown",
 }) => {
-  return await inventory.create({
-    invent_product_id: productId,
-    invent_location: location,
-    invent_stock: stock,
-    invent_shop_id: shopId,
+  return await inventoryModel.create({
+    inventProductId: productId,
+    inventLocation: location,
+    inventStock: stock,
+    inventShopId: shopId,
   });
 };
 
 const findInventoryByProduct = async (productId) => {
-  return await inventory.findOne({
-    invent_product_id: productId
+  return await inventoryModel.findOne({
+    inventProductId: productId
   });
 };
 
 
 const reservationInventory = async ({ productId, quantity, cartId }) => {
   const query = {
-    invent_product_id: productId, invent_stock: { $gte: quantity },
+    inventProductId: productId, inventStock: { $gte: quantity },
   }, updateSet = {
-    $inc: { invent_stock: -quantity },
+    $inc: { inventStock: -quantity },
     $push: {
-      invent_reservation:
+      inventReservation:
         { quantity, cartId, createdOn: new Date() }
     },
   }, options = { upsert: true, new: true }
 
-  return await inventory.updateOne(query, updateSet, options)
+  return await inventoryModel.updateOne(query, updateSet, options)
 }
 
 const findOneAndUpdate = async (query, updateSet, options) => {
-  return await inventory.findOneAndUpdate(query, updateSet, options)
+  return await inventoryModel.findOneAndUpdate(query, updateSet, options)
 }
 
 module.exports = {

@@ -17,50 +17,50 @@ class ProductFactory {
 }
 
 /**
- * product_name: { type: String, required: true },
-    product_thumb: { type: String, required: true },
-    product_description: { type: String },
-    product_price: { type: Number, required: true },
-    product_quantity: { type: Number, required: true },
-    product_type: {
+ * productName: { type: String, required: true },
+    productThumb: { type: String, required: true },
+    productDescription: { type: String },
+    productPrice: { type: Number, required: true },
+    productQuantity: { type: Number, required: true },
+    productType: {
       type: String,
       required: true,
       enum: ["Electronics", "Clothing", "Furniture"],
     },
-    product_shop: { type: Schema.Types.ObjectId, ref: "Shop" },
-    product_attributes: { type: Schema.Types.Mixed },
+    productShop: { type: Schema.Types.ObjectId, ref: "Shop" },
+    productAttributes: { type: Schema.Types.Mixed },
     required: true,
  */
 
 class Product {
   constructor({
-    product_name,
-    product_thumb,
-    product_description,
-    product_price,
-    product_quantity,
-    product_type,
-    product_shop,
-    product_attributes,
+    productName,
+    productThumb,
+    productDescription,
+    productPrice,
+    productQuantity,
+    productType,
+    productShop,
+    productAttributes,
   }) {
-    this.product_name = product_name;
-    this.product_thumb = product_thumb;
-    this.product_description = product_description;
-    this.product_price = product_price;
-    this.product_quantity = product_quantity;
-    this.product_type = product_type;
-    this.product_shop = product_shop;
-    this.product_attributes = product_attributes;
+    this.productName = productName;
+    this.productThumb = productThumb;
+    this.productDescription = productDescription;
+    this.productPrice = productPrice;
+    this.productQuantity = productQuantity;
+    this.productType = productType;
+    this.productShop = productShop;
+    this.productAttributes = productAttributes;
   }
 
-  async createProduct(product_id) {
-    return await product.create({ ...this, _id: product_id });
+  async createProduct(productId) {
+    return await product.create({ ...this, _id: productId });
   }
 }
 
 class Clothing extends Product {
   async createProduct() {
-    const newClothing = await clothing.create(this.product_attributes);
+    const newClothing = await clothing.create(this.productAttributes);
     if (!newClothing) throw new BadRequestError("Create new clothing error");
 
     const newProduct = await super.createProduct();
@@ -73,8 +73,8 @@ class Clothing extends Product {
 class Electronic extends Product {
   async createProduct() {
     const newElectronic = await electronic.create({
-      ...this.product_attributes,
-      product_shop: this.product_shop,
+      ...this.productAttributes,
+      productShop: this.productShop,
     });
     if (!newElectronic)
       throw new BadRequestError("Create new Electronic error");
