@@ -86,7 +86,7 @@ class CartService {
     });
   }
 
-  static async deleteUserCart({ userId, productId }) {
+  static async deleteCartItem({ userId, productId }) {
     const query = { cart_user_id: userId, cart_state: "active" },
       updateSet = {
         $pull: {
@@ -100,6 +100,22 @@ class CartService {
 
     return deleteCart;
   }
+
+  static async deleteAllCartItems({ userId, productIds }) {
+    const query = { cart_user_id: userId, cart_state: "active" };
+    const updateSet = {
+      $pull: {
+        cart_products: {
+          productId: { $in: productIds },
+        },
+      },
+    };
+  
+    const deleteCart = await cartRepository.updateCart({ query, updateSet });
+  
+    return deleteCart;
+  }
+  
 
   static async getListUserCart({ userId }) {
     return await cartRepository.findUserCart({ userId });

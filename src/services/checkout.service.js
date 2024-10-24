@@ -4,6 +4,7 @@ const { NotFound, BadRequestError } = require("../core/error.response");
 const { findCartById } = require("../repositories/cart.repository");
 const { create } = require("../repositories/order.repository");
 const { checkProductByServer } = require("../repositories/product.repository");
+const { deleteCartItem, deleteAllCartItems } = require("./cart.service");
 const DiscountService = require("./discount.service");
 const { acquireLock, releaseLock } = require("./redis.service");
 
@@ -152,27 +153,29 @@ class CheckoutService {
 
     const newOrder = create({ userId, checkout_order, user_address, user_payment, shop_order_ids_new })
 
-    if (newOrder) {
+    const productIds = products.map(product => product.productId);
 
+    if (newOrder) {
+      await deleteAllCartItems({ userId, productIds });
     }
 
     return newOrder
   }
 
-  static async getOrdersByUser(){
+  static async getOrdersByUser() {
 
   }
 
-  static async getDetailOrderByUser(){
+  static async getDetailOrderByUser() {
 
   }
 
-  static async cancelOrderByUser(){
+  static async cancelOrderByUser() {
 
   }
 
-  static async updateOrderStatusByShop(){
-    
+  static async updateOrderStatusByShop() {
+
   }
 }
 
