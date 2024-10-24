@@ -9,9 +9,9 @@ class ProductController {
   //   // console.log(req);
   //   new CREATED({
   //     message: "Create new product success!",
-  //     metadata: await ProductService.createProduct(req.body.product_type, {
+  //     metadata: await ProductService.createProduct(req.body.productType, {
   //       ...req.body,
-  //       product_shop: req.user.userId,
+  //       productShop: req.user.userId,
   //     }),
   //   }).send(res);
   // }
@@ -20,9 +20,9 @@ class ProductController {
     // console.log(req);
     new CREATED({
       message: "Create new product success!",
-      metadata: await ProductServiceV2.createProduct(req.body.product_type, {
+      metadata: await ProductServiceV2.createProduct(req.body.productType, {
         ...req.body,
-        product_shop: req.user.userId,
+        productShop: req.user.userId,
       }),
     }).send(res);
   }
@@ -31,10 +31,10 @@ class ProductController {
     new SuccessResponse({
       message: "Update product success",
       metadata: await ProductServiceV2.updateProduct(
-        req.params.product_id,
+        req.params.productId,
         {
           ...req.body,
-          product_shop: req.user.userId,
+          productShop: req.user.userId,
         }
       ),
     }).send(res);
@@ -44,9 +44,9 @@ class ProductController {
     new SuccessResponse({
       message: "Published product success",
       metadata: await ProductServiceV2.toggleProductPublishStatus({
-        product_id: req.params.id,
-        product_shop: req.user.userId,
-        isPublish: true,
+        productId: req.params.id,
+        productShop: req.user.userId,
+        isPublished: true,
       }),
     }).send(res);
   }
@@ -55,9 +55,9 @@ class ProductController {
     new SuccessResponse({
       message: "Unpublished product success",
       metadata: await ProductServiceV2.toggleProductPublishStatus({
-        product_id: req.params.id,
-        product_shop: req.user.userId,
-        isPublish: false,
+        productId: req.params.id,
+        productShop: req.user.userId,
+        isPublished: false,
       }),
     }).send(res);
   }
@@ -74,7 +74,7 @@ class ProductController {
     new SuccessResponse({
       message: "Get all drafts success",
       metadata: await ProductServiceV2.findAllDraftsForShop({
-        product_shop: req.user.userId,
+        productShop: req.user.userId,
       }),
     }).send(res);
   }
@@ -83,7 +83,7 @@ class ProductController {
     new SuccessResponse({
       message: "Get all published success",
       metadata: await ProductServiceV2.findAllPublishedForShop({
-        product_shop: req.user.userId,
+        productShop: req.user.userId,
       }),
     }).send(res);
   }
@@ -106,7 +106,7 @@ class ProductController {
     new SuccessResponse({
       message: "Get all product success",
       metadata: await ProductServiceV2.findProduct({
-        product_id: req.params.product_id,
+        productId: req.params.productId,
       }),
     }).send(res);
   }

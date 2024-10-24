@@ -9,7 +9,7 @@ class DiscountController {
       message: "Code generated successfully",
       metadata: await DiscountService.createDiscountCode({
         ...req.body,
-        shop_id: req.user.userId,
+        shopId: req.user.userId,
       }),
     }).send(res);
   };
@@ -19,7 +19,7 @@ class DiscountController {
       message: "Get all discount codes successfully",
       metadata: await DiscountService.getAllDiscountCodesByShop({
         ...req.query,
-        shop_id: req.user.userId,
+        shopId: req.user.userId,
       }),
     }).send(res);
   };

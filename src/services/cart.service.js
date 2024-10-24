@@ -1,16 +1,15 @@
 "use strict";
 
 const { NotFound } = require("../core/error.response");
-const cart = require("../models/cart.model");
 const cartRepository = require("../repositories/cart.repository");
 const { getProductById } = require("../repositories/product.repository");
 
 class CartService {
   static async createUserCart({ userId, product }) {
-    const query = { cart_user_id: userId, cart_state: "active" },
+    const query = { cartUserId: userId, cartState: "active" },
       updateOrInsert = {
         $addToSet: {
-          cart_products: product,
+          cartProducts: product,
         },
       },
       options = { upsert: true, new: true };
@@ -26,13 +25,13 @@ class CartService {
     const { productId, quantity } = product;
 
     const query = {
-      cart_user_id: userId,
-      "cart_products.productId": productId,
-      cart_state: "active",
+      cartUserId: userId,
+      "cartProducts.productId": productId,
+      cartState: "active",
     },
       updateSet = {
         $inc: {
-          "cart_products.$.quantity": quantity,
+          "cartProducts.$.quantity": quantity,
         },
       },
       options = { upsert: true, new: true };
@@ -47,13 +46,13 @@ class CartService {
   static async addToCart({ userId, product = {} }) {
     const userCart = await cartRepository.findUserCart({ userId });
 
-    if (!userCart || userCart.cart_products.length === 0) {
+    if (!userCart || userCart.cartProducts.length === 0) {
       // Nếu giỏ hàng chưa tồn tại hoặc rỗng, tạo mới giỏ hàng và thêm sản phẩm
       return await this.createUserCart({ userId, product });
     }
 
     // Kiểm tra xem sản phẩm đã tồn tại trong giỏ hàng chưa
-    const existingProduct = userCart.cart_products.find(
+    const existingProduct = userCart.cartProducts.find(
       (p) => p.productId.toString() === product.productId.toString()
     );
 
@@ -66,31 +65,31 @@ class CartService {
     }
   }
 
-  static async addToCartV2({ userId, shop_order_ids = [] }) {
-    const { productId, quantity, old_quantity } =
-      shop_order_ids[0]?.item_products[0];
+  static async addToCartV2({ userId, shopOrderIds = [] }) {
+    const { productId, quantity, oldQuantity } =
+      shopOrderIds[0]?.itemProducts[0];
 
     const foundProduct = await getProductById(productId);
 
     if (!foundProduct) throw new NotFound("Product not found");
 
-    if (foundProduct.product_shop.toString() !== shop_order_ids[0]?.shopId)
+    if (foundProduct.productShop.toString() !== shopOrderIds[0]?.shopId)
       throw new NotFound("Product does not belong to the shop");
 
     return await this.updateUserCartQuantity({
       userId,
       product: {
         productId,
-        quantity: quantity - old_quantity,
+        quantity: quantity - oldQuantity,
       },
     });
   }
 
   static async deleteCartItem({ userId, productId }) {
-    const query = { cart_user_id: userId, cart_state: "active" },
+    const query = { cartUserId: userId, cartState: "active" },
       updateSet = {
         $pull: {
-          cart_products: {
+          cartProducts: {
             productId,
           },
         },
@@ -102,10 +101,10 @@ class CartService {
   }
 
   static async deleteAllCartItems({ userId, productIds }) {
-    const query = { cart_user_id: userId, cart_state: "active" };
+    const query = { cartUserId: userId, cartState: "active" };
     const updateSet = {
       $pull: {
-        cart_products: {
+        cartProducts: {
           productId: { $in: productIds },
         },
       },

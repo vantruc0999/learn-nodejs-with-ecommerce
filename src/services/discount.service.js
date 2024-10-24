@@ -26,55 +26,54 @@ class DiscountService {
   static async createDiscountCode(payload) {
     const {
       code,
-      start_date,
-      end_date,
-      is_active,
-      shop_id,
-      min_order_value,
-      product_ids,
-      applies_to,
+      startDate,
+      endDate,
+      isActive,
+      shopId,
+      minOrderValue,
+      productIds,
+      appliesTo,
       name,
       description,
       type,
       value,
-      max_value,
-      users_used,
-      max_uses,
-      uses_count,
-      max_uses_per_user,
+      usersUsed,
+      maxUses,
+      usesCount,
+      maxUsesPerUser,
     } = payload;
 
-    if (new Date() < new Date(start_date) && new Date() > new Date(end_date)) {
+    if (new Date() < new Date(startDate) && new Date() > new Date(endDate)) {
       throw new BadRequestError("Discount code has expired");
     }
 
-    if (new Date(start_date) >= new Date(end_date)) {
+    if (new Date(startDate) >= new Date(endDate)) {
       throw new BadRequestError("Start date must before end date");
     }
 
-    const foundDiscount = await findDiscount({ code, shop_id });
+    const foundDiscount = await findDiscount({ code, shopId });
 
     if (foundDiscount) {
       throw new ConflictRequestError("Discount already exists");
     }
 
     const newDiscount = await discount.create({
-      discount_name: name,
-      discount_description: description,
-      discount_type: type,
-      discount_value: value,
-      discount_code: code,
-      discount_start_date: new Date(start_date),
-      discount_end_date: new Date(end_date),
-      discount_max_uses: max_uses,
-      discount_uses_count: uses_count,
-      discount_users_used: users_used,
-      discount_max_uses_per_user: max_uses_per_user,
-      discount_min_order_value: min_order_value || 0,
-      discount_shop_id: shop_id,
-      discount_is_active: is_active,
-      discount_applies_to: applies_to, // Keep as "specific" or "all"
-      discount_product_ids: applies_to === "specific" ? product_ids : [],
+      discountName: name,
+      discountDescription: description,
+      discountType: type,
+      discountValue: value,
+      discountCode: code,
+      discountStartDate: new Date(startDate),
+      discountEndDate: new Date(endDate),
+      discountMaxUses: maxUses,
+      discountUsesCount: usesCount,
+      discountUsersUsed: usersUsed,
+      discountMaxUsesPerUser: maxUsesPerUser,
+      discountMinOrderValue: minOrderValue || 0,
+      discountShopId: shopId,
+      discountIsActive: isActive,
+      discountAppliesTo: appliesTo, // Keep as "specific" or "all"
+      discountProductIds: appliesTo === "specific" ? productIds : [],
     });
 
     return newDiscount;
@@ -88,108 +87,108 @@ class DiscountService {
   }) {
     const foundDiscount = await findDiscount({ codeId, shopId });
 
-    if (!foundDiscount || !foundDiscount.discount_is_active) {
+    if (!foundDiscount || !foundDiscount.discountIsActive) {
       throw new NotFound("discount not exists");
     }
 
-    const { discount_applies_to, discount_product_ids } = foundDiscount;
+    const { discountAppliesTo, discountProductIds } = foundDiscount;
     let products;
-    if (discount_applies_to === "all") {
+    if (discountAppliesTo === "all") {
       products = findAllProducts({
         filter: {
-          product_shop: shopId,
+          productShop: shopId,
           isPublished: true,
         },
         limit: +limit,
         page: +page,
         sort: "ctime",
-        select: ["product_name"],
+        select: ["productName"],
       });
     }
 
-    if (discount_applies_to === "specific") {
-      console.log('discount_product_ids', discount_product_ids);
+    if (discountAppliesTo === "specific") {
+      console.log('discountProductIds', discountProductIds);
       products = await findAllProducts({
         filter: {
-          _id: { $in: discount_product_ids },
+          _id: { $in: discountProductIds },
           isPublished: true,
         },
         limit: +limit,
         page: +page,
         sort: "ctime",
-        select: ["product_name"],
+        select: ["productName"],
       });
     }
 
     return products;
   }
 
-  static async getAllDiscountCodesByShop({ limit, page, shop_id }) {
+  static async getAllDiscountCodesByShop({ limit, page, shopId }) {
     const discounts = await findAllDiscountCodesUnselect({
       limit: +limit,
       page: +page,
       filter: {
-        discount_shop_id: shop_id,
-        discount_is_active: true,
+        discountShopId: shopId,
+        discountIsActive: true,
       },
-      unselect: ["__v", "discount_shop_id"],
+      unselect: ["__v", "discountShopId"],
     });
 
     return discounts;
   }
 
-  static async getDiscountAmount({ code, user_id, shop_id, products }) {
-    const foundDiscount = await findDiscount({ codeId: code, shopId: shop_id });
+  static async getDiscountAmount({ code, userId, shopId, products }) {
+    const foundDiscount = await findDiscount({ codeId: code, shopId: shopId });
 
     if (!foundDiscount) throw new NotFound("discount not exists");
     const {
-      discount_is_active,
-      discount_max_uses,
-      discount_min_order_value,
-      discount_users_used,
-      discount_start_date,
-      discount_end_date,
-      discount_max_uses_per_user,
-      discount_type,
-      discount_value,
+      discountIsActive,
+      discountMaxUses,
+      discountMinOrderValue,
+      discountUsersUsed,
+      discountStartDate,
+      discountEndDate,
+      discountMaxUsesPerUser,
+      discountType,
+      discountValue,
     } = foundDiscount;
 
-    if (!discount_is_active) throw new NotFound("discount expired");
-    if (!discount_max_uses) throw new NotFound("discount are out");
+    if (!discountIsActive) throw new NotFound("discount expired");
+    if (!discountMaxUses) throw new NotFound("discount are out");
 
     if (
-      new Date() < new Date(discount_start_date) &&
-      new Date() > new Date(discount_end_date)
+      new Date() < new Date(discountStartDate) &&
+      new Date() > new Date(discountEndDate)
     ) {
       throw new BadRequestError("Discount code has expired");
     }
 
     let totalOrder = 0;
 
-    if (discount_min_order_value > 0) {
+    if (discountMinOrderValue > 0) {
       totalOrder = products.reduce((acc, product) => {
         return acc + product.quantity * product.price;
       }, 0);
     }
 
-    if (totalOrder < discount_min_order_value) {
+    if (totalOrder < discountMinOrderValue) {
       throw new NotFound(
-        `discount requires a min order value of ${discount_min_order_value}`
+        `discount requires a min order value of ${discountMinOrderValue}`
       );
     }
 
-    if (discount_max_uses_per_user > 0) {
-      const userDiscount = discount_users_used.find(
-        (user) => user.userId == user_id
+    if (discountMaxUsesPerUser > 0) {
+      const userDiscount = discountUsersUsed.find(
+        (user) => user.userId == userId
       );
       if (userDiscount) {
       }
     }
 
     const amount =
-      discount_type === "fixed_amount"
-        ? discount_value
-        : totalOrder * (discount_value / 100);
+      discountType === "fixedAmount"
+        ? discountValue
+        : totalOrder * (discountValue / 100);
 
     return {
       totalOrder,
@@ -198,26 +197,26 @@ class DiscountService {
     };
   }
 
-  static async deleteDiscountCode({ shop_id, code_id }) {
+  static async deleteDiscountCode({ shopId, codeId }) {
     const deleted = await discount.findOneAndDelete({
-      discount_code: code_id,
-      discount_shop_id: shop_id,
+      discountCode: codeId,
+      discountShopId: shopId,
     });
     return deleted;
   }
 
-  static async cancelDiscountCode({ code_id, shop_id, user_id }) {
-    const foundDiscount = findDiscount({ code_id, shop_id });
+  static async cancelDiscountCode({ codeId, shopId, userId }) {
+    const foundDiscount = findDiscount({ codeId, shopId });
 
     if (!foundDiscount) throw new NotFound("discount not exists");
 
     const result = await discount.findByIdAndUpdate(foundDiscount._id, {
       $pull: {
-        discount_users_used: user_id,
+        discountUsersUsed: userId,
       },
       $inc: {
-        discount_max_uses: 1,
-        discount_uses_count: -1,
+        discountMaxUses: 1,
+        discountUsesCount: -1,
       },
     });
 
