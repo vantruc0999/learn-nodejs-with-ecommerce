@@ -1,7 +1,7 @@
 'use strict'
 
 const { createClient } = require('redis')
-const { reservationInventory } = require('../repositories/inventory.repository')
+const { reservationInventory, findInventoryByProduct } = require('../repositories/inventory.repository')
 
 const redisClient = createClient({
     url: 'redis://localhost:6377'
@@ -23,22 +23,35 @@ const acquireLock = async (productId, quantity, cartId) => {
         const result = await redisClient.set(key, expireTime, {
             NX: true,  // Chỉ thiết lập khóa nếu chưa tồn tại
             PX: expireTime  // Thời gian hết hạn theo mili giây
-        })
-        console.log(`result::`, result);
-        if (result === 'OK') {
-            const isReservation = await reservationInventory({
-                productId, quantity, cartId
-            })
+        });
 
-            if (isReservation.modifiedCount) {
-                return key
+        console.log(`result::`, result);
+
+        if (result === 'OK') {
+            // Tìm sản phẩm trong kho
+            const inventoryItem = await findInventoryByProduct(productId);
+
+            // Kiểm tra nếu số lượng tồn kho đủ
+            if (!inventoryItem || inventoryItem.invent_stock < quantity) {
+                // Giải phóng khóa nếu không đủ hàng và báo lỗi
+                await releaseLock(key);
+                throw new Error("Not enough stock available");
             }
 
+            // Thực hiện đặt hàng và giảm tồn kho
+            const isReservation = await reservationInventory({
+                productId, quantity, cartId
+            });
+
+            if (isReservation.modifiedCount) {
+                return key;
+            }
         } else {
-            await new Promise((resolve) => setTimeout(resolve, 50))
+            await new Promise((resolve) => setTimeout(resolve, 50));
         }
     }
-}
+};
+
 
 
 const releaseLock = async (keyLock) => {

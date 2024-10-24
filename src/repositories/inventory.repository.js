@@ -16,6 +16,13 @@ const insertInventory = async ({
   });
 };
 
+const findInventoryByProduct = async (productId) => {
+  return await inventory.findOne({
+    invent_product_id: productId
+  });
+};
+
+
 const reservationInventory = async ({ productId, quantity, cartId }) => {
   const query = {
     invent_product_id: productId, invent_stock: { $gte: quantity },
@@ -37,5 +44,6 @@ const findOneAndUpdate = async (query, updateSet, options) => {
 module.exports = {
   insertInventory,
   reservationInventory,
+  findInventoryByProduct,
   findOneAndUpdate
 };
