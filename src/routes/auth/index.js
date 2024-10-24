@@ -2,7 +2,7 @@
 
 const express = require("express");
 const authController = require("../../controllers/auth.controller");
-const asyncHandler = require("../../helpers/asyncHandler");
+const asyncHandler = require("../../helpers/async-handler");
 const { authentication, authenticationV2 } = require("../../middlewares/authentication");
 
 

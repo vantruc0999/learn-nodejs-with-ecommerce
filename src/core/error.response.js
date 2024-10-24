@@ -1,7 +1,7 @@
 "use strict";
 
-const ReasonPhrases = require("../utils/reasonPhrases");
-const StatusCode = require("../utils/statusCode");
+const ReasonPhrases = require("../utils/reason-phrases");
+const StatusCode = require("../utils/status-code");
 
 class ErrorResponse extends Error {
   constructor(message, status) {

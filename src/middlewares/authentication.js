@@ -3,8 +3,8 @@
 const JWT = require("jsonwebtoken");
 
 const { Unauthorized, NotFound } = require("../core/error.response");
-const { findByUserId } = require("../services/keyToken.service");
-const asyncHandler = require("../helpers/asyncHandler");
+const { findByUserId } = require("../services/key-token.service");
+const asyncHandler = require("../helpers/async-handler");
 
 const HEADER = {
   API_KEY: "x-api-key",
