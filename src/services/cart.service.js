@@ -100,7 +100,7 @@ class CartService {
     return deleteCart;
   }
 
-  static async deleteAllCartItems({ userId, productIds }) {
+  static async deleteCartItems({ userId, productIds }) {
     const query = { cartUserId: userId, cartState: "active" };
     const updateSet = {
       $pull: {

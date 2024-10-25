@@ -75,7 +75,7 @@ const queryProduct = async ({ query, limit, skip }) => {
 
 const getProductByIdAndShop = async ({ productShop, productId }) => {
   return await product.findOne({
-    producSshop,
+    productShop,
     _id: productId,
   });
 };
