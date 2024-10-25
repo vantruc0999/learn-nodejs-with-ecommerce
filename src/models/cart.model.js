@@ -13,7 +13,13 @@ const cartSchema = new Schema(
       enum: ["active", "completed", "failed", "pending"],
       default: "active",
     },
-    cartProducts: { type: Array, required: true, default: [] },
+    cartProducts: [
+      {
+        productId: { type: String, required: true },
+        shopId: { type: String, required: true },
+        quantity: { type: Number, required: true },
+      },
+    ],
     cartCountProduct: { type: Number, required: true },
     cartUserId: { type: Number },
   },
