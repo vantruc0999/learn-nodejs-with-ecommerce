@@ -4,7 +4,7 @@ const { NotFound, BadRequestError } = require("../core/error.response");
 const { findCartById } = require("../repositories/cart.repository");
 const { create } = require("../repositories/order.repository");
 const { checkProductByServer } = require("../repositories/product.repository");
-const { deleteCartItem, deleteAllCartItems } = require("./cart.service");
+const { deleteCartItems } = require("./cart.service");
 const DiscountService = require("./discount.service");
 const { acquireLock, releaseLock } = require("./redis.service");
 
@@ -55,6 +55,7 @@ const { acquireLock, releaseLock } = require("./redis.service");
 class CheckoutService {
   static async checkoutReview({ cartId, userId, shopOrderIds }) {
     const foundCart = await findCartById(cartId);
+
     if (!foundCart) throw new NotFound("Cart does not exists");
 
     const checkoutOrder = {
@@ -74,7 +75,12 @@ class CheckoutService {
 
       const checkProductServer = await checkProductByServer(itemProducts);
 
-      if (!checkProductServer[0]) throw new BadRequestError("Order wrong");
+      const foundProductInCart = foundCart.cartProducts.find(product => product.productId === checkProductServer[0].productId);
+
+      if (foundProductInCart.quantity !== checkProductServer[0].quantity)
+        throw new BadRequestError("Order wrong")
+
+      if (!checkProductServer[0]) throw new BadRequestError("Order wrong")
       console.log("checkProductServer::", checkProductServer);
 
       const checkoutPrice = checkProductServer.reduce((acc, product) => {
@@ -119,6 +125,47 @@ class CheckoutService {
     };
   }
 
+  //payload:
+  /* 
+  {
+    "cartId": "671b719e700adbc27a32b4b5",
+    "userId": 1001,
+    "shopOrderIds": [
+        {
+            "shopId": "671a24286fd773843662bd3f",
+            "shopDiscounts": [
+                {
+                    "discountId": "671b02b1fdefb063efb76a17",
+                    "codeId": "SHOP-113"
+                }
+            ],
+            "itemProducts": [
+                {
+                    "quantity": 5,
+                    "productId": "671b00734d15bc6c43487f16"
+                }
+            ]
+        },
+        {
+            "shopId": "671a24286fd773843662bd3f",
+            "shopDiscounts": [],
+            "itemProducts": [
+                {
+                    "quantity": 5,
+                    "productId": "671b00614d15bc6c43487f0e"
+                }
+            ]
+        }
+    ],
+    "userAddress": {
+        "phoneNumber": "123456789",
+        "address": "80 Le Loi, Hai Chau, Da Nang"
+    },
+    "userPayment": {
+        "method": "paypal"
+    }
+}
+  */
   static async orderByUser({
     shopOrderIds,
     cartId,
@@ -156,7 +203,7 @@ class CheckoutService {
     const productIds = products.map(product => product.productId);
 
     if (newOrder) {
-      await deleteAllCartItems({ userId, productIds });
+      await deleteCartItems({ userId, productIds });
     }
 
     return newOrder
