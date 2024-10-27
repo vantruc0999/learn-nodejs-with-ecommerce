@@ -32,6 +32,10 @@ class CommentRepository {
         return commentModel.updateMany(query, updateData);
     }
 
+    static async deleteMany(query) {
+        return commentModel.deleteMany(query);
+    }
+
     static async saveComment(comment) {
         return comment.save();
     }
