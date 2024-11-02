@@ -7,6 +7,7 @@ const {
   authentication,
   authenticationV2,
 } = require("../../middlewares/authentication");
+const { grantAccess } = require("../../middlewares/rbac.middleware");
 
 const router = express.Router();
 
@@ -14,6 +15,7 @@ router.get(
   "/search/:keySearch",
   asyncHandler(productController.getListSearchProduct)
 );
+// router.get("", grantAccess('readAny', 'shop') ,asyncHandler(productController.getAllProducts));
 router.get("", asyncHandler(productController.getAllProducts));
 router.get("/:product_id", asyncHandler(productController.getProduct));
 
