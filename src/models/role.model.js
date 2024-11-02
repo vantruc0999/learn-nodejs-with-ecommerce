@@ -15,11 +15,13 @@ const roleSchema = new Schema(
         roleSlug: { type: String, required: true },
         roleStatus: { type: String, default: 'active', enum: ['active', 'inactive', 'pending'] },
         roleDescription: { type: String, default: '' },
-        roleGrants: {
-            resource: { type: Schema.Types.ObjectId, ref: 'Resource', required: true },
-            actions: { type: String, required: true },
-            attributes: { type: String, default: '*' }
-        }
+        roleGrants: [
+            {
+                resource: { type: Schema.Types.ObjectId, ref: 'Resource', required: true },
+                actions: [{ type: String, required: true }],
+                attributes: { type: String, default: '*' }
+            }
+        ]
     }, {
     timestamps: true,
     collection: COLLECTION_NAME,
