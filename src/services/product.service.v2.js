@@ -20,6 +20,7 @@ const {
   findProductWithSelectedFields,
 } = require("../repositories/product.repository");
 const { removeUndefinedObject, updateNestedObjectParser } = require("../utils");
+const { pushNotiToSystem } = require("./notification.service");
 
 class ProductFactory {
   static productRegistry = {};
@@ -151,6 +152,18 @@ class Product {
         shopId: this.productShop,
         stock: this.productQuantity,
       });
+
+      pushNotiToSystem({
+        type: 'SHOP-001',
+        receiverId: 1,
+        senderId: this.productShop,
+        options: {
+          productName: this.productName,
+          shopId: this.productShop
+        }
+      })
+        .then(resolve => console.log(resolve))
+        .catch(console.err)
     }
     return newProduct;
   }
