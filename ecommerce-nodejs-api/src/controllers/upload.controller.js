@@ -2,7 +2,11 @@
 
 const { BadRequestError } = require("../core/error.response");
 const { SuccessResponse } = require("../core/success.response");
-const { uploadImageFromUrl, uploadImageFromLocal, uploadImageFromLocalFiles } = require("../services/upload.service");
+const { uploadImageFromUrl,
+    uploadImageFromLocal,
+    uploadImageFromLocalFiles,
+    uploadImageFromLocalS3
+} = require("../services/upload.service");
 
 class UploadController {
     uploadFile = async (req, res, next) => {
@@ -14,7 +18,7 @@ class UploadController {
 
     uploadFileThumb = async (req, res, next) => {
         const { file } = req
-        if(!file){
+        if (!file) {
             throw new BadRequestError('File missing')
         }
         new SuccessResponse({
@@ -27,13 +31,27 @@ class UploadController {
 
     uploadImageFromLocalFiles = async (req, res, next) => {
         const { files } = req
-        if(!files.length){
+        if (!files.length) {
             throw new BadRequestError('File missing')
         }
         new SuccessResponse({
             message: "Upload thumb successfully",
             metadata: await uploadImageFromLocalFiles({
                 files
+            })
+        }).send(res);
+    };
+
+    uploadImageFromLocalS3 = async (req, res, next) => {
+        const { file } = req
+
+        if (!file) {
+            throw new BadRequestError('File missing')
+        }
+        new SuccessResponse({
+            message: "Upload thumb successfully",
+            metadata: await uploadImageFromLocalS3({
+                file
             })
         }).send(res);
     };

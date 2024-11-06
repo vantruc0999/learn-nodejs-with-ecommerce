@@ -1,12 +1,17 @@
 "use strict"
 
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { cloudinary } = require("../configs/cloudinary.config")
+const { s3, PutObjectCommand, GetObjectCommand } = require("../configs/s3.config")
+const crypto = require("node:crypto");
+
+const randomImageName = () => crypto.randomBytes(16).toString('hex')
 
 //1. upload from url image
 
 const uploadImageFromUrl = async () => {
     try {
-        const urlImage = 'https://scontent.fdad3-6.fna.fbcdn.net/v/t51.75761-15/462946215_18457689166047485_936434770345523651_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeHSj6x51CDVEmbinPdrHUjqsuFGzdp0KkKy4UbN2nQqQkxwL3t_UHGK4iks3nTwIMrGqV-V3ggstJaa50TYNRA9&_nc_ohc=zNjNusO2YhIQ7kNvgEv779o&_nc_zt=23&_nc_ht=scontent.fdad3-6.fna&_nc_gid=AOAmlpBy3u__H_P9nbDS6yd&oh=00_AYBKYC17EiwWjSeRINuWTx9QLGhx67IT7OENiTUB1jliag&oe=67300F31'
+        const urlImage = 'https://ipwatchdog.com/wp-content/uploads/2018/03/pepe-the-frog-1272162_640.jpg'
         const folderName = 'product/shopId', newFileName = 'testdemo'
 
         const result = await cloudinary.uploader.upload(urlImage, {
@@ -79,9 +84,41 @@ const uploadImageFromLocalFiles = async ({
     }
 }
 
+const uploadImageFromLocalS3 = async ({
+    file
+}) => {
+    try {
+        const imageName = randomImageName()
+
+        const command = new PutObjectCommand({
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key: imageName || 'unknown',
+            Body: file.buffer,
+            ContentType: 'image/jpeg'
+        })
+
+        const result = await s3.send(command)
+
+        console.log('file', file);
+        console.log('command', command);
+
+        const signedUrl = new GetObjectCommand({
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key: imageName
+        })
+
+        const url = await getSignedUrl(s3, signedUrl, { expiresIn: 3600 });
+        console.log(`url::`, url);
+        return url
+    } catch (error) {
+        console.error('Error uploading image using S3Client: ', error)
+    }
+}
+
 // uploadImageFromUrl().catch()
 module.exports = {
     uploadImageFromUrl,
     uploadImageFromLocal,
-    uploadImageFromLocalFiles
+    uploadImageFromLocalFiles,
+    uploadImageFromLocalS3
 }
