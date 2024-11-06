@@ -1,10 +1,12 @@
 "use strict"
 
-const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+// const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+const { getSignedUrl } = require("@aws-sdk/cloudfront-signer");
 const { cloudinary } = require("../configs/cloudinary.config")
 const { s3, PutObjectCommand, GetObjectCommand } = require("../configs/s3.config")
 const crypto = require("node:crypto");
 
+const urlImagePublic = "https://d2wlu2hrnytstv.cloudfront.net"
 const randomImageName = () => crypto.randomBytes(16).toString('hex')
 
 //1. upload from url image
@@ -109,7 +111,41 @@ const uploadImageFromLocalS3 = async ({
 
         const url = await getSignedUrl(s3, signedUrl, { expiresIn: 3600 });
         console.log(`url::`, url);
-        return url
+        return {
+            url: `${urlImagePublic}/${imageName}`,
+            result
+        }
+    } catch (error) {
+        console.error('Error uploading image using S3Client: ', error)
+    }
+}
+
+const uploadImageFromLocalCloudFront = async ({
+    file
+}) => {
+    try {
+        const imageName = randomImageName()
+
+        const command = new PutObjectCommand({
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key: imageName || 'unknown',
+            Body: file.buffer,
+            ContentType: 'image/jpeg'
+        })
+
+        const result = await s3.send(command)
+
+        const url = await getSignedUrl({
+            url: `${urlImagePublic}/${imageName}`,
+            keyPairId: 'KLRJTKP0V6RDW',
+            dateLessThan: new Date(Date.now() + 1000 * 60), //expires in 60 seconds
+            privateKey: process.env.AWS_BUCKET_PRIVATE_KEY_ID,
+        });
+
+        return {
+            url,
+            result
+        }
     } catch (error) {
         console.error('Error uploading image using S3Client: ', error)
     }
@@ -120,5 +156,6 @@ module.exports = {
     uploadImageFromUrl,
     uploadImageFromLocal,
     uploadImageFromLocalFiles,
-    uploadImageFromLocalS3
+    uploadImageFromLocalS3,
+    uploadImageFromLocalCloudFront
 }

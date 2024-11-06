@@ -12,5 +12,6 @@ router.post("/product", asyncHandler(uploadController.uploadFile))
 router.post("/product/thumb", uploadDisk.single('file'), asyncHandler(uploadController.uploadFileThumb))
 router.post("/product/multiple", uploadDisk.array('files', 3), asyncHandler(uploadController.uploadImageFromLocalFiles))
 router.post("/product/bucket", uploadMemory.single('file'), asyncHandler(uploadController.uploadImageFromLocalS3))
+router.post("/product/cloudfront", uploadMemory.single('file'), asyncHandler(uploadController.uploadImageFromLocalCloudFront))
 
 module.exports = router;
